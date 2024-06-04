@@ -39,19 +39,32 @@ fn svd_sign_correction(
 
 fn compute_covariance_matrix<'a>(data: &'a DMatrix<f64>) -> DMatrix<f64> {
     let n = data.ncols();
-    let m = data.column_mean();
+    let m = data.nrows();
+    let mut mean = vec![0.0; n];
+    for j in 0..n {
+        for i in 0..m {
+            mean[j] += data[(i, j)];
+        }
+        mean[j] /= m as f64;
+    }
+    let mut centered_data = DMatrix::<f64>::zeros(m, n);
+    for i in 0..m {
+        for j in 0..n {
+            centered_data[(i, j)] = data[(i, j)] - mean[j];
+        }
+    }
     let mut covariance_matrix = DMatrix::<f64>::zeros(n, n);
     for i in 0..n {
         for j in 0..=i {
             let mut cov = 0.0;
-            for k in 0..data.nrows() {
-                cov += (data[(k, i)] - m[i]) * (data[(k, j)] - m[j]);
+            for k in 0..m {
+                cov += centered_data[(k, i)] * centered_data[(k, j)];
             }
-            covariance_matrix[(i, j)] = cov / (data.nrows() as f64 - 1.0);
+            covariance_matrix[(i, j)] = cov / (m as f64 - 1.0);
             covariance_matrix[(j, i)] = covariance_matrix[(i, j)];
         }
     }
-    return covariance_matrix;
+    covariance_matrix
 }
 
 fn compute_eigenvectors<'a>(matrix: &'a DMatrix<f64>) -> DMatrix<f64> {
@@ -105,8 +118,8 @@ pub fn compute_features<'a>(
             slice_from_knn_indices(points_b, colors_b, knn_indices_b, i, search_size);
         let eigenvectors_a = compute_eigenvectors(&sl_points_a);
         let projection_a_to_a =
-            utils::subtract_row_from_matrix(&sl_points_a, &sl_points_a.row_mean())
-                * eigenvectors_a.clone();
+        utils::subtract_row_from_matrix(&sl_points_a, &sl_points_a.row_mean())
+        * eigenvectors_a.clone();
         let projection_b_to_a =
             utils::subtract_row_from_matrix(&sl_points_b, &sl_points_a.row_mean())
                 * eigenvectors_a.clone();
@@ -132,44 +145,34 @@ pub fn compute_features<'a>(
         let eigenvectors_b = compute_eigenvectors(&projection_b_to_a);
         // // Update local features
         local_features
-            .row_mut(i)
-            .view_mut((0, 0), (1, 3))
+            .view_mut((i, 0), (1, 3))
             .copy_from(&projection_a_to_a.row(0));
         local_features
-            .row_mut(i)
-            .view_mut((0, 3), (1, 3))
+            .view_mut((i, 3), (1, 3))
             .copy_from(&projection_b_to_a.row(0));
         local_features
-            .row_mut(i)
-            .view_mut((0, 6), (1, 3))
+            .view_mut((i, 6), (1, 3))
             .copy_from(&mean_a.view((0, 3), (1, 3)));
         local_features
-            .row_mut(i)
-            .view_mut((0, 9), (1, 6))
+            .view_mut((i, 9), (1, 6))
             .copy_from(&mean_b);
         local_features
-            .row_mut(i)
-            .view_mut((0, 15), (1, 6))
+            .view_mut((i, 15), (1, 6))
             .copy_from(&variance_a);
         local_features
-            .row_mut(i)
-            .view_mut((0, 21), (1, 6))
+            .view_mut((i, 21), (1, 6))
             .copy_from(&variance_b);
         local_features
-            .row_mut(i)
-            .view_mut((0, 27), (1, 6))
+            .view_mut((i, 27), (1, 6))
             .copy_from(&covariance_ab);
         local_features
-            .row_mut(i)
-            .view_mut((0, 33), (1, 3))
+            .view_mut((i, 33), (1, 3))
             .copy_from(&eigenvectors_b.view((0, 0), (1, 3)));
         local_features
-            .row_mut(i)
-            .view_mut((0, 36), (1, 3))
+            .view_mut((i, 36), (1, 3))
             .copy_from(&eigenvectors_b.view((1, 0), (1, 3)));
         local_features
-            .row_mut(i)
-            .view_mut((0, 39), (1, 3))
+            .view_mut((i, 39), (1, 3))
             .copy_from(&eigenvectors_b.view((2, 0), (1, 3)));
     }
     return local_features;

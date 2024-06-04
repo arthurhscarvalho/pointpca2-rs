@@ -63,7 +63,16 @@ fn main() {
         ],
     );
     let local_features = features::compute_features(&points_a, &colors_a, &points_b, &colors_b, &knn_indices_a, &knn_indices_b);
-    println!("{:?}", local_features);
+    // println!("{}", local_features);
+    for row in local_features.row_iter() {
+        // Create a string for each row with formatted elements
+        let formatted_row: Vec<String> = row.iter()
+                                            .map(|&x| format!("{:.2}", x))
+                                            .collect();
+        // Print the formatted row
+        println!("{}", formatted_row.join(" "));
+    }
+
 
     // let num: f64 = 13.55667;
     // let num_ordered = utils::to_ordered(num);
