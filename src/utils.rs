@@ -1,7 +1,7 @@
 extern crate ordered_float;
 use self::ordered_float::OrderedFloat;
-use nalgebra::{DMatrix, Scalar, Matrix, Const, VecStorage, Dyn};
-use std::ops::{AddAssign};
+use nalgebra::{Const, DMatrix, Dyn, Matrix, Scalar, VecStorage};
+use std::ops::AddAssign;
 
 pub fn to_ordered(num: f64) -> OrderedFloat<f64> {
     return OrderedFloat(num);
@@ -30,8 +30,10 @@ where
     result
 }
 
-pub fn subtract_row_from_matrix<'a>(matrix: &'a DMatrix<f64>, row_vec: &'a Matrix<f64, Const<1>, Dyn, VecStorage<f64, Const<1>, Dyn>>) -> DMatrix<f64>
-{
+pub fn subtract_row_from_matrix<'a>(
+    matrix: &'a DMatrix<f64>,
+    row_vec: &'a Matrix<f64, Const<1>, Dyn, VecStorage<f64, Const<1>, Dyn>>,
+) -> DMatrix<f64> {
     // Check if the row vector has the same number of columns as the matrix
     if row_vec.nrows() != 1 || row_vec.ncols() != matrix.ncols() {
         panic!("Row vector must have the same dimensions as the matrix columns.");
