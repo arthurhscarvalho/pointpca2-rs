@@ -1,7 +1,7 @@
-use std::{f64::EPSILON, result};
-
+use libm::acos;
 use na::{DMatrix, MatrixView};
 use num_traits::Pow;
+use std::{f64::consts::PI, f64::EPSILON};
 
 fn relative_difference(x: f64, y: f64) -> f64 {
     return 1. - (x - y).abs() / (x.abs() + y.abs() + EPSILON);
@@ -174,9 +174,82 @@ fn point_to_centroid_distances<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> 
     result
 }
 
+fn anisotropy_planarity_linearity<'a, T: na::Dim>(
+    x: &'a MatrixView<f64, T, T>,
+    y: &'a MatrixView<f64, T, T>,
+    col1: usize,
+    col2: usize,
+) -> DMatrix<f64> {
+    assert_eq!(x.nrows(), y.nrows(), "Matrices must have the same shape.");
+    assert_eq!(x.ncols(), y.ncols(), "Matrices must have the same shape.");
+    let nrows = x.nrows();
+    let mut result = DMatrix::zeros(nrows, 1);
+    for i in 0..nrows {
+        let x_diff = (x[(i, col1)] - x[(i, col2)]) / x[(i, 0)];
+        let y_diff = (y[(i, col1)] - y[(i, col2)]) / y[(i, 0)];
+        result[(i, 0)] = relative_difference(x_diff, y_diff);
+    }
+    result
+}
+
+fn surface_variation<'a, T: na::Dim>(
+    x: &'a MatrixView<f64, T, T>,
+    y: &'a MatrixView<f64, T, T>,
+) -> DMatrix<f64> {
+    assert_eq!(x.nrows(), y.nrows(), "Matrices must have the same shape.");
+    assert_eq!(x.ncols(), y.ncols(), "Matrices must have the same shape.");
+    let nrows = x.nrows();
+    let ncols = x.ncols();
+    let mut result = DMatrix::zeros(nrows, 1);
+    for i in 0..nrows {
+        let mut x_sum: f64 = 0.;
+        let mut y_sum: f64 = 0.;
+        for j in 0..ncols {
+            x_sum += x[(i, j)];
+            y_sum += y[(i, j)];
+        }
+        result[(i, 0)] = relative_difference(x[(i, 2)] / x_sum, y[(i, 2)] / y_sum);
+    }
+    result
+}
+
+fn sphericity<'a, T: na::Dim>(
+    x: &'a MatrixView<f64, T, T>,
+    y: &'a MatrixView<f64, T, T>,
+) -> DMatrix<f64> {
+    assert_eq!(x.nrows(), y.nrows(), "Matrices must have the same shape.");
+    assert_eq!(x.ncols(), y.ncols(), "Matrices must have the same shape.");
+    let nrows = x.nrows();
+    let mut result = DMatrix::zeros(nrows, 1);
+    for i in 0..nrows {
+        result[(i, 0)] = relative_difference(x[(i, 2)] / x[(i, 0)], y[(i, 2)] / y[(i, 0)]);
+    }
+    result
+}
+
+fn angular_similarity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatrix<f64> {
+    let nrows = x.nrows();
+    let mut result = DMatrix::zeros(nrows, 1);
+    for i in 0..nrows {
+        let numerator = x[(i, 1)];
+        let mut denominator: f64 = x[(i, 1)].pow(2);
+        denominator = denominator.sqrt();
+        result[(i, 0)] = 1. - 2. * acos(numerator / denominator).abs() / PI;
+    }
+    result
+}
+
+fn parallelity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>, col: usize) -> DMatrix<f64> {
+    let nrows = x.nrows();
+    let mut result = DMatrix::zeros(nrows, 1);
+    for (i, num) in x.column(col).iter().enumerate() {
+        result[i] = *num;
+    }
+    result
+}
+
 pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> {
     let nrows = local_features.nrows();
-    let ncols = local_features.ncols();
     let projection_a_to_a = local_features.view((0, 0), (nrows, 3));
     let projection_b_to_a = local_features.view((0, 3), (nrows, 3));
     let colors_mean_a = local_features.view((0, 6), (nrows, 3));
@@ -267,7 +340,10 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
         .copy_from(&point_projected_distances(&points_mean_b));
     predictors
         .view_mut((0, 24), (nrows, 3))
-        .copy_from(&iter_relative_difference(&points_variance_a, &points_variance_b));
+        .copy_from(&iter_relative_difference(
+            &points_variance_a,
+            &points_variance_b,
+        ));
     predictors
         .view_mut((0, 27), (nrows, 3))
         .copy_from(&covariance_differences(
@@ -284,8 +360,44 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
     predictors
         .view_mut((0, 31), (nrows, 1))
         .copy_from(&entropy(&points_variance_a, &points_variance_b));
-    // To-Do (only the last 8 features are missing)
-    // . . .
-
+    predictors
+        .view_mut((0, 32), (nrows, 1))
+        .copy_from(&anisotropy_planarity_linearity(
+            &points_variance_a,
+            &points_variance_b,
+            0,
+            2,
+        ));
+    predictors
+        .view_mut((0, 33), (nrows, 1))
+        .copy_from(&anisotropy_planarity_linearity(
+            &points_variance_a,
+            &points_variance_b,
+            1,
+            2,
+        ));
+    predictors
+        .view_mut((0, 34), (nrows, 1))
+        .copy_from(&anisotropy_planarity_linearity(
+            &points_variance_a,
+            &points_variance_b,
+            0,
+            1,
+        ));
+    predictors
+        .view_mut((0, 35), (nrows, 1))
+        .copy_from(&surface_variation(&points_variance_a, &points_variance_b));
+    predictors
+        .view_mut((0, 36), (nrows, 1))
+        .copy_from(&sphericity(&points_variance_a, &points_variance_b));
+    predictors
+        .view_mut((0, 37), (nrows, 1))
+        .copy_from(&angular_similarity(&points_eigenvectors_b_y));
+    predictors
+        .view_mut((0, 38), (nrows, 1))
+        .copy_from(&parallelity(&points_eigenvectors_b_x, 0));
+    predictors
+        .view_mut((0, 39), (nrows, 1))
+        .copy_from(&parallelity(&points_eigenvectors_b_z, 2));
     predictors
 }

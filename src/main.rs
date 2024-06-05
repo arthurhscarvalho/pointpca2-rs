@@ -1,6 +1,7 @@
 extern crate nalgebra as na;
 extern crate ordered_float;
 extern crate kiddo;
+extern crate libm;
 
 use knn_search::knn_search;
 use ordered_float::OrderedFloat;
