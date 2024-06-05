@@ -1,6 +1,7 @@
-use std::f64::EPSILON;
+use std::{f64::EPSILON, result};
 
 use na::{DMatrix, MatrixView};
+use num_traits::Pow;
 
 fn relative_difference(x: f64, y: f64) -> f64 {
     return 1. - (x - y).abs() / (x.abs() + y.abs() + EPSILON);
@@ -23,7 +24,7 @@ fn iter_relative_difference<'a, T: na::Dim>(
     result
 }
 
-fn textural_covariance<'a, T: na::Dim>(
+fn covariance_differences<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
     z: &'a MatrixView<f64, T, T>,
@@ -71,7 +72,7 @@ fn textural_variance_sum<'a, T: na::Dim>(
     result
 }
 
-fn textural_omnivariance<'a, T: na::Dim>(
+fn omnivariance_differences<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
@@ -92,7 +93,7 @@ fn textural_omnivariance<'a, T: na::Dim>(
     result
 }
 
-fn textural_entropy<'a, T: na::Dim>(
+fn entropy<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
@@ -109,6 +110,66 @@ fn textural_entropy<'a, T: na::Dim>(
             y_entropy += y[(i, j)] * (y[(i, j)] + EPSILON).ln();
         }
         result[(i, 0)] = relative_difference(x_entropy, y_entropy);
+    }
+    result
+}
+
+fn euclidean_distances<'a, T: na::Dim>(
+    x: &'a MatrixView<f64, T, T>,
+    y: &'a MatrixView<f64, T, T>,
+) -> DMatrix<f64> {
+    assert_eq!(x.nrows(), y.nrows(), "Matrices must have the same shape.");
+    assert_eq!(x.ncols(), y.ncols(), "Matrices must have the same shape.");
+    let nrows = x.nrows();
+    let ncols = x.ncols();
+    let mut result = DMatrix::zeros(nrows, 1);
+    for i in 0..nrows {
+        let mut dists: f64 = 0.;
+        for j in 0..ncols {
+            dists += (x[(i, j)] - y[(i, j)]).pow(2);
+        }
+        result[(i, 0)] = dists;
+    }
+    result
+}
+
+fn vector_projected_distances<'a, T: na::Dim>(
+    x: &'a MatrixView<f64, T, T>,
+    y: &'a MatrixView<f64, T, T>,
+    col: usize,
+) -> DMatrix<f64> {
+    assert_eq!(x.nrows(), y.nrows(), "Matrices must have the same shape.");
+    assert_eq!(x.ncols(), y.ncols(), "Matrices must have the same shape.");
+    let ncols = 1;
+    let nrows = x.nrows();
+    let mut result = DMatrix::zeros(nrows, ncols);
+    for i in 0..nrows {
+        result[(i, 0)] = (x[(i, col)] - y[(i, col)]).abs();
+    }
+    result
+}
+
+fn point_projected_distances<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatrix<f64> {
+    let ncols = 2;
+    let nrows = x.nrows();
+    let mut result = DMatrix::zeros(nrows, ncols);
+    for i in 0..nrows {
+        result[(i, 0)] = x[(i, 0)].abs();
+        result[(i, 1)] = x[(i, 1)].abs();
+    }
+    result
+}
+
+fn point_to_centroid_distances<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatrix<f64> {
+    let ncols = 1;
+    let nrows = x.nrows();
+    let mut result = DMatrix::zeros(nrows, ncols);
+    for i in 0..nrows {
+        let mut dists: f64 = 0.;
+        for j in 0..ncols {
+            dists += x[(i, j)].pow(2);
+        }
+        result[(i, 0)] = dists.sqrt();
     }
     result
 }
@@ -132,7 +193,6 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
     let points_eigenvectors_b_z = local_features.view((0, 39), (nrows, 3));
     let mut predictors = DMatrix::zeros(nrows, 40);
     predictors.fill(f64::NAN);
-
     // Textural predictors
     predictors
         .view_mut((0, 0), (nrows, 3))
@@ -145,7 +205,7 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
         ));
     predictors
         .view_mut((0, 6), (nrows, 3))
-        .copy_from(&textural_covariance(
+        .copy_from(&covariance_differences(
             &colors_variance_a,
             &colors_variance_b,
             &colors_covariance_ab,
@@ -158,15 +218,73 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
         ));
     predictors
         .view_mut((0, 10), (nrows, 1))
-        .copy_from(&textural_omnivariance(
+        .copy_from(&omnivariance_differences(
             &colors_variance_a,
             &colors_variance_b,
         ));
     predictors
-        .view_mut((0, 10), (nrows, 1))
-        .copy_from(&textural_entropy(&colors_variance_a, &colors_variance_b));
+        .view_mut((0, 11), (nrows, 1))
+        .copy_from(&entropy(&colors_variance_a, &colors_variance_b));
     // Geometric predictors
-    // To-Do
+    predictors
+        .view_mut((0, 12), (nrows, 1))
+        .copy_from(&euclidean_distances(&projection_a_to_a, &projection_b_to_a));
+    predictors
+        .view_mut((0, 13), (nrows, 1))
+        .copy_from(&vector_projected_distances(
+            &projection_a_to_a,
+            &projection_b_to_a,
+            0,
+        ));
+    predictors
+        .view_mut((0, 14), (nrows, 1))
+        .copy_from(&vector_projected_distances(
+            &projection_a_to_a,
+            &projection_b_to_a,
+            1,
+        ));
+    predictors
+        .view_mut((0, 15), (nrows, 1))
+        .copy_from(&vector_projected_distances(
+            &projection_a_to_a,
+            &projection_b_to_a,
+            2,
+        ));
+    predictors
+        .view_mut((0, 16), (nrows, 2))
+        .copy_from(&point_projected_distances(&projection_a_to_a));
+    predictors
+        .view_mut((0, 18), (nrows, 1))
+        .copy_from(&point_to_centroid_distances(&projection_b_to_a));
+    predictors
+        .view_mut((0, 19), (nrows, 2))
+        .copy_from(&point_projected_distances(&projection_b_to_a));
+    predictors
+        .view_mut((0, 21), (nrows, 1))
+        .copy_from(&point_to_centroid_distances(&points_mean_b));
+    predictors
+        .view_mut((0, 22), (nrows, 2))
+        .copy_from(&point_projected_distances(&points_mean_b));
+    predictors
+        .view_mut((0, 24), (nrows, 3))
+        .copy_from(&iter_relative_difference(&points_variance_a, &points_variance_b));
+    predictors
+        .view_mut((0, 27), (nrows, 3))
+        .copy_from(&covariance_differences(
+            &points_variance_a,
+            &points_variance_b,
+            &points_covariance_ab,
+        ));
+    predictors
+        .view_mut((0, 30), (nrows, 1))
+        .copy_from(&omnivariance_differences(
+            &points_variance_a,
+            &points_variance_b,
+        ));
+    predictors
+        .view_mut((0, 31), (nrows, 1))
+        .copy_from(&entropy(&points_variance_a, &points_variance_b));
+    // To-Do (only the last 8 features are missing)
     // . . .
 
     predictors
