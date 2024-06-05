@@ -80,7 +80,7 @@ fn compute_eigenvectors<'a>(matrix: &'a DMatrix<f64>) -> DMatrix<f64> {
 fn slice_from_knn_indices<'a>(
     points: &'a na::DMatrix<f64>,
     colors: &'a na::DMatrix<u8>,
-    knn_indices: &'a na::DMatrix<i64>,
+    knn_indices: &'a na::DMatrix<usize>,
     knn_row: usize,
     search_size: usize,
 ) -> (DMatrix<f64>, DMatrix<u8>) {
@@ -89,8 +89,8 @@ fn slice_from_knn_indices<'a>(
     let mut selected_points = Vec::new();
     let mut selected_colors = Vec::new();
     for j in sl_knn_indices.iter() {
-        selected_points.push(points.row(*j as usize));
-        selected_colors.push(colors.row(*j as usize));
+        selected_points.push(points.row(*j));
+        selected_colors.push(colors.row(*j));
     }
     let sl_points = DMatrix::from_rows(&selected_points);
     let sl_colors = DMatrix::from_rows(&selected_colors);
@@ -102,8 +102,8 @@ pub fn compute_features<'a>(
     colors_a: &'a na::DMatrix<u8>,
     points_b: &'a na::DMatrix<f64>,
     colors_b: &'a na::DMatrix<u8>,
-    knn_indices_a: &'a na::DMatrix<i64>,
-    knn_indices_b: &'a na::DMatrix<i64>,
+    knn_indices_a: &'a na::DMatrix<usize>,
+    knn_indices_b: &'a na::DMatrix<usize>,
 ) -> DMatrix<f64> {
     // let search_size = 81; // Temporary
     let search_size = 9; // Temporary
