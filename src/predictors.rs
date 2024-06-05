@@ -128,7 +128,7 @@ fn euclidean_distances<'a, T: na::Dim>(
         for j in 0..ncols {
             dists += (x[(i, j)] - y[(i, j)]).pow(2);
         }
-        result[(i, 0)] = dists;
+        result[(i, 0)] = dists.sqrt();
     }
     result
 }
@@ -154,8 +154,8 @@ fn point_projected_distances<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DM
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, ncols);
     for i in 0..nrows {
-        result[(i, 0)] = x[(i, 0)].abs();
-        result[(i, 1)] = x[(i, 1)].abs();
+        result[(i, 0)] = x[(i, 1)].abs();
+        result[(i, 1)] = x[(i, 2)].abs();
     }
     result
 }
@@ -232,9 +232,9 @@ fn angular_similarity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatrix<f
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
         let numerator = x[(i, 1)];
-        let mut denominator: f64 = x[(i, 1)].pow(2);
+        let mut denominator: f64 = x.row(i).sum().pow(2);
         denominator = denominator.sqrt();
-        result[(i, 0)] = 1. - 2. * acos(numerator / denominator).abs() / PI;
+        result[(i, 0)] = 1. - 2. * acos((numerator / denominator).abs()) / PI;
     }
     result
 }
@@ -243,7 +243,7 @@ fn parallelity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>, col: usize) -> DMat
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for (i, num) in x.column(col).iter().enumerate() {
-        result[i] = *num;
+        result[i] = 1. - *num;
     }
     result
 }
