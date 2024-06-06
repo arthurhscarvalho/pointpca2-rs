@@ -28,6 +28,9 @@ pub fn read_ply_as_matrix(path: &str) -> (DMatrix<f64>, DMatrix<u8>) {
     let point_cloud = read_ply(path);
     let mut element_count = 0;
     for (_, element) in point_cloud.header.elements {
+        if element_count > 0 {
+            panic!("Multiple elements found in point_cloud header.");
+        }
         element_count = element.count;
     }
     let mut points: DMatrix<f64> = DMatrix::zeros(element_count, 3);
