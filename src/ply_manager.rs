@@ -42,8 +42,12 @@ pub fn read_ply_as_matrix(path: &str) -> (DMatrix<f64>, DMatrix<u8>) {
             let value = extract_value(property);
             if j < 3 {
                 points[(i, j)] = value;
-            } else {
+            }
+            else if j < 6 {
                 colors[(i, j - 3)] = value as u8;
+            }
+            else {
+                panic!("More than 6 (XYZRGB) channels found on point cloud.")
             }
             j += 1;
         }
