@@ -1,7 +1,17 @@
 extern crate ordered_float;
 use self::ordered_float::OrderedFloat;
 use nalgebra::{Const, DMatrix, Dyn, Matrix, Scalar, VecStorage};
+use ply_rs::{self as ply, ply::DefaultElement};
 use std::ops::AddAssign;
+
+pub fn read_ply(path: &str) -> ply::ply::Ply<DefaultElement> {
+    let mut f = std::fs::File::open(path).unwrap();
+    let p = ply::parser::Parser::<ply::ply::DefaultElement>::new();
+    let ply = p.read_ply(&mut f);
+    assert!(ply.is_ok());
+    let ply = ply.unwrap();
+    ply
+}
 
 pub fn to_ordered(num: f64) -> OrderedFloat<f64> {
     return OrderedFloat(num);

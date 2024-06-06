@@ -11,3 +11,4 @@ ordered-float = { version = "4.0", default-features = true }
 num-traits = "*"
 kiddo = "*"
 libm = "*"
+ply-rs = "*"
