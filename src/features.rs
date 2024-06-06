@@ -1,6 +1,5 @@
-use na::DMatrix;
-
 use crate::utils;
+use na::DMatrix;
 
 fn svd_sign_correction(
     mut u: na::DMatrix<f64>,
@@ -74,7 +73,7 @@ fn compute_eigenvectors<'a>(matrix: &'a DMatrix<f64>) -> DMatrix<f64> {
     // let s = eigenvectors.singular_values;
     let v_t = eigenvectors.v_t.unwrap();
     let (u_corrected, _) = svd_sign_correction(u, v_t);
-    return u_corrected;
+    u_corrected
 }
 
 fn slice_from_knn_indices<'a>(
@@ -94,7 +93,7 @@ fn slice_from_knn_indices<'a>(
     }
     let sl_points = DMatrix::from_rows(&selected_points);
     let sl_colors = DMatrix::from_rows(&selected_colors);
-    return (sl_points, sl_colors);
+    (sl_points, sl_colors)
 }
 
 pub fn compute_features<'a>(
@@ -118,8 +117,8 @@ pub fn compute_features<'a>(
             slice_from_knn_indices(points_b, colors_b, knn_indices_b, i, search_size);
         let eigenvectors_a = compute_eigenvectors(&sl_points_a);
         let projection_a_to_a =
-        utils::subtract_row_from_matrix(&sl_points_a, &sl_points_a.row_mean())
-        * eigenvectors_a.clone();
+            utils::subtract_row_from_matrix(&sl_points_a, &sl_points_a.row_mean())
+                * eigenvectors_a.clone();
         let projection_b_to_a =
             utils::subtract_row_from_matrix(&sl_points_b, &sl_points_a.row_mean())
                 * eigenvectors_a.clone();
@@ -143,7 +142,7 @@ pub fn compute_features<'a>(
         }
         let covariance_ab = covariance_ab.row_mean();
         let eigenvectors_b = compute_eigenvectors(&projection_b_to_a);
-        // // Update local features
+        // Update local features
         local_features
             .view_mut((i, 0), (1, 3))
             .copy_from(&projection_a_to_a.row(0));
@@ -153,9 +152,7 @@ pub fn compute_features<'a>(
         local_features
             .view_mut((i, 6), (1, 3))
             .copy_from(&mean_a.view((0, 3), (1, 3)));
-        local_features
-            .view_mut((i, 9), (1, 6))
-            .copy_from(&mean_b);
+        local_features.view_mut((i, 9), (1, 6)).copy_from(&mean_b);
         local_features
             .view_mut((i, 15), (1, 6))
             .copy_from(&variance_a);

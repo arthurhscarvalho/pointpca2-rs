@@ -1,22 +1,26 @@
-extern crate nalgebra as na;
-extern crate ordered_float;
 extern crate kiddo;
 extern crate libm;
+extern crate nalgebra as na;
+extern crate ordered_float;
 extern crate ply_rs;
 
-use ply_rs as ply;
-use knn_search::knn_search;
-use ordered_float::OrderedFloat;
-use std::collections::HashSet;
-
 mod features;
+mod knn_search;
+mod ply_manager;
 mod predictors;
 mod preprocessing;
 mod utils;
-mod knn_search;
 
 fn main() {
     let path = "/home/arthurc/romanoillamp_vox10.ply";
-    let pc1 = utils::read_ply(path);
-    println!("Ply header: {:#?}", pc1.header);
+    let (points_a, colors_a) = ply_manager::read_ply_as_matrix(path);
+    for i in 0..10 {
+        for j in 0..3 {
+            print!("{} ", points_a[(i, j)]);
+        }
+        for j in 0..3 {
+            print!("{} ", colors_a[(i, j)]);
+        }
+        println!("");
+    }
 }

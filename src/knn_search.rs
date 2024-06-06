@@ -1,5 +1,5 @@
 use kiddo::float::{distance::SquaredEuclidean, kdtree::KdTree};
-use na::{DMatrix};
+use na::DMatrix;
 
 pub fn knn_search(xa: DMatrix<f64>, xb: DMatrix<f64>) -> DMatrix<usize> {
     let search_size = 9; // Temporary
@@ -23,6 +23,7 @@ pub fn knn_search(xa: DMatrix<f64>, xb: DMatrix<f64>) -> DMatrix<usize> {
             .collect::<Vec<usize>>();
         knn_indices.append(indices.as_mut());
     }
-    let knn_indices = DMatrix::from_row_slice(knn_indices.len() / search_size, search_size, &knn_indices);
+    let knn_indices =
+        DMatrix::from_row_slice(knn_indices.len() / search_size, search_size, &knn_indices);
     return knn_indices;
 }
