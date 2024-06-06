@@ -268,62 +268,60 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
         /*
             Textural predictors
         */
-        // Relative difference mean
+        // Relative difference in mean color values
         iter_relative_difference(&colors_mean_a, &colors_mean_b),
-        // Relative difference variance
+        // Relative difference in color variance
         iter_relative_difference(&colors_variance_a, &colors_variance_b),
-        // Relative difference covariance
+        // Covariance differences between color variances
         covariance_differences(
             &colors_variance_a,
             &colors_variance_b,
             &colors_covariance_ab,
         ),
-        // Relative difference sum of variances
+        // Sum of variances of textures
         textural_variance_sum(&colors_variance_a, &colors_variance_b),
-        // Relative difference ominvariance
+        // Relative difference in omnivariance of textures
         omnivariance_differences(&colors_variance_a, &colors_variance_b),
-        // Relative difference entropy
+        // Entropy of textures
         entropy(&colors_variance_a, &colors_variance_b),
         /*
             Geometric predictors
         */
-        // Euclidean distance of distorted point from reference point (error vector)
+        // Euclidean distance between distorted and reference points (error vector)
         euclidean_distances(&projection_a_to_a, &projection_b_to_a),
-        // Projected distance of vector (between distorted and reference point) from reference planes
+        // Projected distances of vectors between distorted and reference points from reference planes
         vector_projected_distances(&projection_a_to_a, &projection_b_to_a, 0),
         vector_projected_distances(&projection_a_to_a, &projection_b_to_a, 1),
         vector_projected_distances(&projection_a_to_a, &projection_b_to_a, 2),
-        // Projected distances of reference point from reference planes
+        // Projected distances of reference points from reference planes
         point_projected_distances(&projection_a_to_a),
-        // Euclidean distance of distorted point from reference centroid
+        // Euclidean distance between distorted point and reference centroid
         point_to_centroid_distances(&projection_b_to_a),
         // Projected distances of distorted point from reference planes
         point_projected_distances(&projection_b_to_a),
-        // Euclidean distance of distorted centroid from reference centroid
+        // Euclidean distance between distorted centroid and reference centroid
         point_to_centroid_distances(&points_mean_b),
         // Projected distances of distorted centroid from reference planes
         point_projected_distances(&points_mean_b),
-        // Relative difference variance
+        // Relative difference in point variance
         iter_relative_difference(&points_variance_a, &points_variance_b),
-        // Relative difference covariance
+        // Covariance differences between point variances
         covariance_differences(
             &points_variance_a,
             &points_variance_b,
             &points_covariance_ab,
         ),
-        // Relative difference ominvariance
+        // Relative difference in omnivariance of points
         omnivariance_differences(&points_variance_a, &points_variance_b),
-        // Relative difference entropy
+        // Entropy of points
         entropy(&points_variance_a, &points_variance_b),
-        // Relative difference anisotropy
+        // Relative difference in anisotropy, planarity, and linearity of points
         anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 0, 2),
-        // Relative difference planarity
         anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 0, 1),
-        // Relative difference linearity
         anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 1, 2),
-        // Relative difference surface variation
+        // Relative difference in surface variation of points
         surface_variation(&points_variance_a, &points_variance_b),
-        // Relative difference sphericity
+        // Relative difference in sphericity of points
         sphericity(&points_variance_a, &points_variance_b),
         // Angular similarity between distorted and reference planes
         angular_similarity(&points_eigenvectors_b_y),
