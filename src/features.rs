@@ -118,20 +118,18 @@ pub fn compute_features<'a>(
         let eigenvectors_a = compute_eigenvectors(&sl_points_a);
         let projection_a_to_a =
             utils::subtract_row_from_matrix(&sl_points_a, &sl_points_a.row_mean())
-                * eigenvectors_a.clone();
+                * &eigenvectors_a; // Test if cloning eigenvectors_a is needed
         let projection_b_to_a =
             utils::subtract_row_from_matrix(&sl_points_b, &sl_points_a.row_mean())
-                * eigenvectors_a.clone();
+                * &eigenvectors_a;
         let sl_colors_a_f64 = sl_colors_a.map(|x| x as f64);
         let sl_colors_b_f64 = sl_colors_b.map(|x| x as f64);
         let mean_a = utils::concatenate_columns(&projection_a_to_a, &sl_colors_a_f64).row_mean();
         let mean_b = utils::concatenate_columns(&projection_b_to_a, &sl_colors_b_f64).row_mean();
         let proj_colors_a_concat = utils::concatenate_columns(&projection_a_to_a, &sl_colors_a_f64);
         let proj_colors_b_concat = utils::concatenate_columns(&projection_b_to_a, &sl_colors_b_f64);
-        let mean_deviation_a =
-            utils::subtract_row_from_matrix(&proj_colors_a_concat, &mean_a.clone());
-        let mean_deviation_b =
-            utils::subtract_row_from_matrix(&proj_colors_b_concat, &mean_b.clone());
+        let mean_deviation_a = utils::subtract_row_from_matrix(&proj_colors_a_concat, &mean_a);
+        let mean_deviation_b = utils::subtract_row_from_matrix(&proj_colors_b_concat, &mean_b);
         let variance_a = mean_deviation_a.map(|x| x * x).row_mean();
         let variance_b = mean_deviation_b.map(|x| x * x).row_mean();
         let mut covariance_ab = mean_deviation_a.clone();
