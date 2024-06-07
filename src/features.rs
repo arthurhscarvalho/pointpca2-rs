@@ -36,31 +36,18 @@ fn svd_sign_correction(
     (u, v)
 }
 
-fn compute_covariance_matrix<'a>(data: &'a DMatrix<f64>) -> DMatrix<f64> {
-    let n = data.ncols();
-    let m = data.nrows();
-    let mut mean = vec![0.0; n];
-    for j in 0..n {
-        for i in 0..m {
-            mean[j] += data[(i, j)];
-        }
-        mean[j] /= m as f64;
-    }
-    let mut centered_data = DMatrix::<f64>::zeros(m, n);
-    for i in 0..m {
-        for j in 0..n {
-            centered_data[(i, j)] = data[(i, j)] - mean[j];
-        }
-    }
-    let mut covariance_matrix = DMatrix::<f64>::zeros(n, n);
-    for i in 0..n {
-        for j in 0..=i {
-            let mut cov = 0.0;
-            for k in 0..m {
-                cov += centered_data[(k, i)] * centered_data[(k, j)];
+fn compute_covariance_matrix<'a>(x: &'a DMatrix<f64>) -> DMatrix<f64> {
+    let nrows = x.nrows();
+    let ncols = x.ncols();
+    let means = x.row_mean();
+    let mut covariance_matrix = DMatrix::<f64>::zeros(ncols, ncols);
+    for i in 0..ncols {
+        for j in 0..ncols {
+            let mut cov = 0.;
+            for k in 0..nrows {
+                cov += (x[(k, i)] - means[j]) * (x[(k, j)] - means[j]);
             }
-            covariance_matrix[(i, j)] = cov / (m as f64 - 1.0);
-            covariance_matrix[(j, i)] = covariance_matrix[(i, j)];
+            covariance_matrix[(i, j)] = cov / (nrows as f64 - 1.);
         }
     }
     covariance_matrix
@@ -70,7 +57,6 @@ fn compute_eigenvectors<'a>(matrix: &'a DMatrix<f64>) -> DMatrix<f64> {
     let covariance_matrix = compute_covariance_matrix(matrix);
     let eigenvectors = covariance_matrix.svd(true, true);
     let u = eigenvectors.u.unwrap();
-    // let s = eigenvectors.singular_values;
     let v_t = eigenvectors.v_t.unwrap();
     let (u_corrected, _) = svd_sign_correction(u, v_t);
     u_corrected
