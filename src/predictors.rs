@@ -72,7 +72,7 @@ fn textural_variance_sum<'a, T: na::Dim>(
     result
 }
 
-fn omnivariance_differences<'a, T: na::Dim>(
+pub fn omnivariance_differences<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
@@ -160,13 +160,13 @@ fn point_projected_distances<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DM
     result
 }
 
-fn point_to_centroid_distances<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatrix<f64> {
+pub fn point_to_centroid_distances<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatrix<f64> {
     let ncols = 1;
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, ncols);
     for i in 0..nrows {
         let mut dists: f64 = 0.;
-        for j in 0..ncols {
+        for j in 0..x.ncols() {
             dists += x[(i, j)].pow(2);
         }
         result[(i, 0)] = dists.sqrt();
@@ -227,13 +227,14 @@ fn sphericity<'a, T: na::Dim>(
     result
 }
 
-fn angular_similarity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatrix<f64> {
+pub fn angular_similarity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatrix<f64> {
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
         let numerator = x[(i, 1)];
-        let mut denominator: f64 = x.row(i).sum().pow(2);
-        denominator = denominator.sqrt();
+        let (mut a, mut b, mut c) = (x[(i, 0)], x[(i, 1)], x[(i, 2)]);
+        (a, b, c) = (a.pow(2), b.pow(2), c.pow(2));
+        let denominator: f64 = (a + b + c).sqrt();
         result[(i, 0)] = 1. - 2. * acos((numerator / denominator).abs()) / PI;
     }
     result
@@ -317,8 +318,8 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
         entropy(&points_variance_a, &points_variance_b),
         // Relative difference in anisotropy, planarity, and linearity of points
         anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 0, 2),
-        anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 0, 1),
         anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 1, 2),
+        anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 0, 1),
         // Relative difference in surface variation of points
         surface_variation(&points_variance_a, &points_variance_b),
         // Relative difference in sphericity of points

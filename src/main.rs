@@ -1,5 +1,3 @@
-use na::{ComplexField, DMatrix};
-
 extern crate kiddo;
 extern crate libm;
 extern crate nalgebra as na;
@@ -67,7 +65,14 @@ fn main() {
             3, 2, 1,
         ],
     );
-    let local_features = features::compute_features(&points_a, &colors_a, &points_b, &colors_b, &knn_indices_a, &knn_indices_b);
+    let local_features = features::compute_features(
+        &points_a,
+        &colors_a,
+        &points_b,
+        &colors_b,
+        &knn_indices_a,
+        &knn_indices_b,
+    );
     let predictors_result = predictors::compute_predictors(&local_features);
     let pooled_predictors = pooling::mean_pooling(&predictors_result);
     for col in pooled_predictors.iter() {
