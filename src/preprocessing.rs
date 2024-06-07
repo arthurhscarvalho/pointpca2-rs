@@ -51,7 +51,6 @@ pub fn duplicate_merging<'a>(
     let nrows = points_map.len();
     let mut points_result = DMatrix::zeros(nrows, 3);
     let mut colors_result = DMatrix::zeros(nrows, 3);
-    println!("{:?}", points_map);
     for (i, &key) in points_map.keys().enumerate() {
         let point = (
             utils::from_ordered(key.0),
@@ -107,6 +106,7 @@ pub fn preprocess_point_cloud<'a>(
     points: &'a na::DMatrix<f64>,
     colors: &'a na::DMatrix<u8>,
 ) -> (na::DMatrix<f64>, na::DMatrix<u8>) {
-    let (points_result, colors_result) = duplicate_merging(points, colors);
-    return (points_result, colors_result);
+    let (points_merged, colors_merged) = duplicate_merging(points, colors);
+    let colors_yuv = rgb_to_yuv(&colors_merged);
+    return (points_merged, colors_yuv);
 }

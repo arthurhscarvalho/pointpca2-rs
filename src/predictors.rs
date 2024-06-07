@@ -185,8 +185,8 @@ fn anisotropy_planarity_linearity<'a, T: na::Dim>(
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
-        let x_diff = (x[(i, col1)] - x[(i, col2)]) / x[(i, 0)];
-        let y_diff = (y[(i, col1)] - y[(i, col2)]) / y[(i, 0)];
+        let x_diff = (x[(i, col1)] - x[(i, col2)]) / (x[(i, 0)] + EPSILON);
+        let y_diff = (y[(i, col1)] - y[(i, col2)]) / (y[(i, 0)] + EPSILON);
         result[(i, 0)] = relative_difference(x_diff, y_diff);
     }
     result
@@ -208,7 +208,7 @@ fn surface_variation<'a, T: na::Dim>(
             x_sum += x[(i, j)];
             y_sum += y[(i, j)];
         }
-        result[(i, 0)] = relative_difference(x[(i, 2)] / x_sum, y[(i, 2)] / y_sum);
+        result[(i, 0)] = relative_difference(x[(i, 2)] / (x_sum + EPSILON), y[(i, 2)] / (y_sum + EPSILON));
     }
     result
 }
@@ -222,7 +222,7 @@ fn sphericity<'a, T: na::Dim>(
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
-        result[(i, 0)] = relative_difference(x[(i, 2)] / x[(i, 0)], y[(i, 2)] / y[(i, 0)]);
+        result[(i, 0)] = relative_difference(x[(i, 2)] / (x[(i, 0)] + EPSILON), y[(i, 2)] / (y[(i, 0)] + EPSILON));
     }
     result
 }
@@ -234,7 +234,7 @@ pub fn angular_similarity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>) -> DMatr
         let numerator = x[(i, 1)];
         let (mut a, mut b, mut c) = (x[(i, 0)], x[(i, 1)], x[(i, 2)]);
         (a, b, c) = (a.pow(2), b.pow(2), c.pow(2));
-        let denominator: f64 = (a + b + c).sqrt();
+        let denominator: f64 = (a + b + c).sqrt() + EPSILON;
         result[(i, 0)] = 1. - 2. * acos((numerator / denominator).abs()) / PI;
     }
     result

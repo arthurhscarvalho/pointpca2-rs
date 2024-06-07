@@ -13,58 +13,18 @@ mod preprocessing;
 mod utils;
 
 fn main() {
-    let points_a = na::DMatrix::from_row_slice(
-        10,
-        3,
-        &[
-            0., 67., 209., 0., 68., 208., 0., 68., 209., 0., 68., 210., 0., 68., 211., 0., 69.,
-            208., 0., 69., 209., 0., 69., 211., 0., 69., 212., 0., 70., 207.,
-        ],
-    );
-    let colors_a = na::DMatrix::from_row_slice(
-        10,
-        3,
-        &[
-            185, 110, 139, 183, 103, 139, 169, 106, 139, 191, 103, 139, 173, 101, 139, 183, 104,
-            138, 170, 105, 139, 174, 102, 139, 208, 105, 138, 165, 106, 139,
-        ],
-    );
-    let points_b = na::DMatrix::from_row_slice(
-        10,
-        3,
-        &[
-            0., 64., 207., 0., 65., 207., 0., 66., 207., 0., 67., 207., 0., 68., 206., 0., 68.,
-            207., 0., 69., 206., 0., 69., 207., 0., 70., 206., 0., 70., 207.,
-        ],
-    );
-    let colors_b = na::DMatrix::from_row_slice(
-        10,
-        3,
-        &[
-            181, 110, 137, 183, 110, 137, 185, 110, 137, 187, 110, 137, 188, 110, 137, 189, 110,
-            137, 187, 110, 137, 188, 110, 137, 187, 110, 137, 187, 110, 137,
-        ],
-    );
-    let knn_indices_a = na::DMatrix::from_row_slice(
-        10,
-        9,
-        &[
-            0, 2, 1, 3, 6, 5, 4, 7, 8, 1, 2, 5, 6, 0, 3, 9, 4, 7, 2, 6, 0, 1, 3, 5, 4, 7, 9, 3, 4,
-            2, 6, 0, 7, 1, 8, 5, 4, 3, 7, 8, 2, 6, 0, 1, 5, 5, 1, 6, 2, 9, 3, 0, 7, 4, 6, 2, 5, 1,
-            3, 7, 0, 9, 4, 7, 8, 4, 3, 6, 2, 0, 5, 1, 8, 7, 4, 3, 6, 2, 0, 5, 1, 9, 5, 1, 6, 2, 3,
-            0, 7, 4,
-        ],
-    );
-    let knn_indices_b = na::DMatrix::from_row_slice(
-        10,
-        9,
-        &[
-            3, 5, 2, 1, 7, 4, 6, 9, 0, 5, 7, 3, 4, 2, 6, 9, 8, 1, 5, 3, 7, 2, 9, 4, 6, 8, 1, 5, 3,
-            7, 2, 9, 4, 6, 1, 8, 5, 7, 3, 2, 9, 4, 1, 6, 8, 7, 9, 5, 6, 4, 3, 8, 2, 1, 7, 5, 9, 3,
-            6, 4, 8, 2, 1, 7, 5, 9, 3, 2, 6, 4, 8, 1, 7, 5, 9, 3, 2, 6, 4, 8, 1, 9, 7, 8, 6, 5, 4,
-            3, 2, 1,
-        ],
-    );
+    std::env::set_var("RUST_BACKTRACE", "1");
+    let search_size = 81;
+    println!("Reading ply");
+    let (points_a, colors_a) = ply_manager::read_ply_as_matrix("/home/arthurc/redandblack_vox10_1550.ply");
+    let (points_b, colors_b) = ply_manager::read_ply_as_matrix("/home/arthurc/tmc13_redandblack_vox10_1550_dec_geom04_text04_octree-predlift.ply");
+    println!("Preprocessing");
+    let (points_a, colors_a) = preprocessing::preprocess_point_cloud(&points_a, &colors_a);
+    let (points_b, colors_b) = preprocessing::preprocess_point_cloud(&points_b, &colors_b);
+    println!("Performing knn search");
+    let knn_indices_a = knn_search::knn_search(&points_a, &points_a, search_size);
+    let knn_indices_b = knn_search::knn_search(&points_a, &points_b, search_size);
+    println!("Computing local features");
     let local_features = features::compute_features(
         &points_a,
         &colors_a,
@@ -72,9 +32,13 @@ fn main() {
         &colors_b,
         &knn_indices_a,
         &knn_indices_b,
+        search_size
     );
+    println!("Computing predictors");
     let predictors_result = predictors::compute_predictors(&local_features);
+    println!("Pooling predictors");
     let pooled_predictors = pooling::mean_pooling(&predictors_result);
+    println!("Predictors:");
     for col in pooled_predictors.iter() {
         print!("{:.2} ", *col);
     }

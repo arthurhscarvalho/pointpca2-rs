@@ -89,9 +89,8 @@ pub fn compute_features<'a>(
     colors_b: &'a na::DMatrix<u8>,
     knn_indices_a: &'a na::DMatrix<usize>,
     knn_indices_b: &'a na::DMatrix<usize>,
+    search_size: usize,
 ) -> DMatrix<f64> {
-    // let search_size = 81; // Temporary
-    let search_size = 9; // Temporary
     let nrows = points_a.shape().0;
     let ncols = 42;
     let mut local_features = DMatrix::zeros(nrows, ncols);
