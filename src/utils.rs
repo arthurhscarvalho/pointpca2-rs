@@ -34,15 +34,12 @@ pub fn subtract_row_from_matrix<'a>(
     matrix: &'a DMatrix<f64>,
     row_vec: &'a Matrix<f64, Const<1>, Dyn, VecStorage<f64, Const<1>, Dyn>>,
 ) -> DMatrix<f64> {
-    // Check if the row vector has the same number of columns as the matrix
     if row_vec.nrows() != 1 || row_vec.ncols() != matrix.ncols() {
         panic!("Row vector must have the same dimensions as the matrix columns.");
     }
-    // Create a new matrix with the same dimensions as the original
-    let mut new_matrix = DMatrix::zeros(matrix.nrows(), matrix.ncols());
     let nrows = matrix.nrows();
     let ncols = matrix.ncols();
-    // Iterate through each row of the matrix and perform element-wise subtraction
+    let mut new_matrix = DMatrix::zeros(nrows, ncols);
     for i in 0..nrows {
         for j in 0..ncols {
             new_matrix[(i, j)] = matrix[(i, j)] - row_vec[(0, j)];
