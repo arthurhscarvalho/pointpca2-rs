@@ -14,7 +14,7 @@ mod utils;
 
 fn main() {
     std::env::set_var("RUST_BACKTRACE", "1");
-    let search_size = 9;
+    let search_size = 81;
     println!("Reading ply");
     let (points_a, colors_a) = ply_manager::read_ply_as_matrix("/home/arthurc/redandblack_vox10_1550.ply");
     let (points_b, colors_b) = ply_manager::read_ply_as_matrix("/home/arthurc/tmc13_redandblack_vox10_1550_dec_geom04_text04_octree-predlift.ply");
