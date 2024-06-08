@@ -13,7 +13,6 @@ mod preprocessing;
 mod utils;
 
 fn main() {
-    std::env::set_var("RUST_BACKTRACE", "1");
     let search_size = 81;
     println!("Reading ply");
     let (points_a, colors_a) = ply_manager::read_ply_as_matrix("/home/arthurc/redandblack_vox10_1550.ply");
