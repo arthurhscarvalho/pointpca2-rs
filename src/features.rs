@@ -103,7 +103,7 @@ pub fn compute_features<'a>(
         let eigenvectors_a = compute_eigenvectors(&sl_points_a);
         let projection_a_to_a =
             utils::subtract_row_from_matrix(&sl_points_a, &sl_points_a.row_mean())
-                * &eigenvectors_a; // Test if cloning eigenvectors_a is needed
+                * &eigenvectors_a;
         let projection_b_to_a =
             utils::subtract_row_from_matrix(&sl_points_b, &sl_points_a.row_mean())
                 * &eigenvectors_a;
