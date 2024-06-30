@@ -18,7 +18,7 @@ Please note that the *main* branch encompasses the Rust implementation, and the 
 For Rust usage, install the Rust programming language in your system, and simply clone this repository and run ```cargo run```.
 
 ### Build using Maturin
-To use the project as a Python package, firstly setup a virtual environment of your choice and activate it, then clone the "pypi" branch from this project, and install the Python requirements in the *requirements.txt* file. Install the Rust programming language in your system. Run ```maturin build -r``` and the package will be installed in your environment.
+To use the project as a Python package, firstly setup a virtual environment of your choice and activate it, then clone this repository from the "pypi" branch, and install the Python requirements from the *requirements.txt* file. Install the Rust programming language in your system. Run ```maturin develop -r``` and the package will be installed in your environment.
 
 ### From PyPI
 Not yet available.
