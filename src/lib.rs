@@ -5,8 +5,7 @@ extern crate ordered_float;
 extern crate ply_rs;
 
 use na::DMatrix;
-use numpy::PyArray;
-use numpy::PyArray2;
+use numpy::PyArray1;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
@@ -27,7 +26,7 @@ fn pointpca2(
     colors_b: Vec<Vec<u8>>,
     search_size: usize,
     verbose: bool,
-) -> &PyArray2<f64> {
+) -> &PyArray1<f64> {
     let points_a = DMatrix::from_vec(
         points_a.len(),
         points_a[0].len(),
@@ -85,11 +84,7 @@ fn pointpca2(
         }
         println!("");
     }
-    let nrows = pooled_predictors.nrows();
-    let ncols = pooled_predictors.ncols();
-    let py_array = PyArray::from_iter(_py, pooled_predictors.iter().cloned())
-        .reshape((nrows, ncols))
-        .unwrap();
+    let py_array = PyArray1::from_iter(_py, pooled_predictors.iter().cloned());
     py_array
 }
 
