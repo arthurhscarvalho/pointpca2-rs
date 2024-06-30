@@ -13,4 +13,4 @@ points_b, colors_b = np.asarray(pc_test.points), np.asarray(pc_test.colors)
 predictors = pointpca2_rs.pointpca2(
     points_a, colors_a, points_b, colors_b, search_size=81, verbose=False
 )
-print(*[f'{i:.4f}' for i in predictors])
+print(*predictors)

@@ -17,6 +17,20 @@ mod predictors;
 mod preprocessing;
 mod utils;
 
+fn as_dmatrix(points: Vec<Vec<f64>>, colors: Vec<Vec<u8>>) -> (DMatrix<f64>, DMatrix<u8>) {
+    let nrows = points.len();
+    let ncols = points[0].len();
+    let mut points_matrix = DMatrix::zeros(nrows, ncols);
+    let mut colors_matrix = DMatrix::zeros(nrows, ncols);
+    for i in 0..nrows {
+        for j in 0..ncols {
+            points_matrix[(i, j)] = points[i][j];
+            colors_matrix[(i, j)] = colors[i][j]
+        }
+    }
+    (points_matrix, colors_matrix)
+}
+
 #[pyfunction]
 fn pointpca2(
     _py: Python,
@@ -27,26 +41,8 @@ fn pointpca2(
     search_size: usize,
     verbose: bool,
 ) -> &PyArray1<f64> {
-    let points_a = DMatrix::from_vec(
-        points_a.len(),
-        points_a[0].len(),
-        points_a.into_iter().flat_map(|v| v.into_iter()).collect(),
-    );
-    let colors_a = DMatrix::from_vec(
-        colors_a.len(),
-        colors_a[0].len(),
-        colors_a.into_iter().flat_map(|v| v.into_iter()).collect(),
-    );
-    let points_b = DMatrix::from_vec(
-        points_b.len(),
-        points_b[0].len(),
-        points_b.into_iter().flat_map(|v| v.into_iter()).collect(),
-    );
-    let colors_b = DMatrix::from_vec(
-        colors_b.len(),
-        colors_b[0].len(),
-        colors_b.into_iter().flat_map(|v| v.into_iter()).collect(),
-    );
+    let (points_a, colors_a) = as_dmatrix(points_a, colors_a);
+    let (points_b, colors_b) = as_dmatrix(points_b, colors_b);
     if verbose {
         println!("Preprocessing");
     }
