@@ -15,8 +15,8 @@ mod utils;
 fn main() {
     let search_size = 81;
     println!("Reading ply");
-    let (points_a, colors_a) = ply_manager::read_ply_as_matrix("/home/arthurc/redandblack_vox10_1550.ply");
-    let (points_b, colors_b) = ply_manager::read_ply_as_matrix("/home/arthurc/tmc13_redandblack_vox10_1550_dec_geom04_text04_octree-predlift.ply");
+    let (points_a, colors_a) = ply_manager::read_ply_as_matrix("/home/arthurc/APSIPA___M-PCCD/references/longdress_vox10_1300.ply");
+    let (points_b, colors_b) = ply_manager::read_ply_as_matrix("/home/arthurc/APSIPA___M-PCCD/PVS/tmc13_longdress_vox10_1300_dec_geom05_text05_trisoup-predlift.ply");
     println!("Preprocessing");
     let (points_a, colors_a) = preprocessing::preprocess_point_cloud(&points_a, &colors_a);
     let (points_b, colors_b) = preprocessing::preprocess_point_cloud(&points_b, &colors_b);
@@ -39,7 +39,7 @@ fn main() {
     let pooled_predictors = pooling::mean_pooling(&predictors_result);
     println!("Predictors:");
     for col in pooled_predictors.iter() {
-        print!("{:.2} ", *col);
+        print!("{:.4}  ", *col);
     }
     println!("");
 }
