@@ -1,0 +1,18 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "pointpca2_rs"
+description = "A Rust-based Python library for extracting pointpca2 features from Point Clouds."
+readme = "README.md"
+requires-python = "==3.10"
+dependencies = ["numpy>=1.26", "opencv-python>=4.9", "toml==0.10.0"]
+classifier = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python",
+    "Programming Language :: Rust",
+]
+
+[project.urls]
+repository = "https://github.com/akaTsunemori/pointpca2-rust"
