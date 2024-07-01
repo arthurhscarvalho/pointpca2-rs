@@ -11,7 +11,7 @@ fn svd_sign_correction(
     for j in 0..ncols {
         let mut max_abs_val = 0.0;
         for i in 0..nrows {
-            let abs_val = u[(i, j)].abs();
+            let abs_val = v[(j, i)].abs();
             if abs_val > max_abs_val {
                 max_abs_val = abs_val;
                 max_abs_cols[j] = i;
@@ -21,7 +21,7 @@ fn svd_sign_correction(
     let signs: Vec<f64> = max_abs_cols
         .iter()
         .enumerate()
-        .map(|(j, &idx)| u[(idx, j)].signum())
+        .map(|(j, &idx)| v[(j, idx)].signum())
         .collect();
     for j in 0..ncols {
         for i in 0..nrows {
