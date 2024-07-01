@@ -71,15 +71,15 @@ fn slice_from_knn_indices<'a>(
 ) -> (DMatrix<f64>, DMatrix<u8>) {
     let knn_indices_row = knn_indices.row(knn_row);
     let sl_knn_indices = knn_indices_row.columns(0, search_size);
-    let mut selected_points = Vec::new();
-    let mut selected_colors = Vec::new();
-    for j in sl_knn_indices.iter() {
-        selected_points.push(points.row(*j));
-        selected_colors.push(colors.row(*j));
+    let nrows = search_size;
+    let ncols = points.ncols();
+    let mut selected_points = DMatrix::zeros(nrows, ncols);
+    let mut selected_colors = DMatrix::zeros(nrows, ncols);
+    for (i, j) in sl_knn_indices.iter().enumerate() {
+        selected_points.row_mut(i).copy_from(&points.row(*j));
+        selected_colors.row_mut(i).copy_from(&colors.row(*j));
     }
-    let sl_points = DMatrix::from_rows(&selected_points);
-    let sl_colors = DMatrix::from_rows(&selected_colors);
-    (sl_points, sl_colors)
+    (selected_points, selected_colors)
 }
 
 pub fn compute_features<'a>(
