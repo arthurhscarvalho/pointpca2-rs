@@ -3,12 +3,10 @@ name = "pointpca2-rust"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-nalgebra = "*"
-ordered-float = { version = "4.0", default-features = true }
-num-traits = "*"
-kiddo = "*"
-libm = "*"
-ply-rs = "*"
+nalgebra = "0.32.5"
+ordered-float = "4.0"
+num-traits = "0.2.19"
+kiddo = "4.2.0"
+libm = "0.2.8"
+ply-rs = "0.1.3"
