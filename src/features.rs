@@ -5,32 +5,28 @@ fn svd_sign_correction(
     mut u: na::DMatrix<f64>,
     mut v: na::DMatrix<f64>,
 ) -> (na::DMatrix<f64>, na::DMatrix<f64>) {
-    let ncols = u.ncols();
-    let nrows = u.nrows();
-    let mut max_abs_cols = vec![0; ncols];
-    for j in 0..ncols {
-        let mut max_abs_val = 0.0;
-        for i in 0..nrows {
-            let abs_val = v[(j, i)].abs();
+    let nrows = v.nrows();
+    let ncols = v.ncols();
+    let mut max_abs_rows = vec![0; nrows];
+    for i in 0..nrows {
+        let mut max_abs_val = f64::NEG_INFINITY;
+        for j in 0..ncols {
+            let abs_val = v[(i, j)].abs();
             if abs_val > max_abs_val {
                 max_abs_val = abs_val;
-                max_abs_cols[j] = i;
+                max_abs_rows[i] = j;
             }
         }
     }
-    let signs: Vec<f64> = max_abs_cols
+    let signs: Vec<f64> = max_abs_rows
         .iter()
         .enumerate()
-        .map(|(j, &idx)| v[(j, idx)].signum())
+        .map(|(i, &j)| v[(i, j)].signum())
         .collect();
-    for j in 0..ncols {
-        for i in 0..nrows {
-            u[(i, j)] *= signs[j];
-        }
-    }
-    for (j, &sign) in signs.iter().enumerate() {
-        for i in 0..v.nrows() {
-            v[(i, j)] *= sign;
+    for i in 0..nrows {
+        for j in 0..ncols {
+            v[(i, j)] *= signs[i];
+            u[(j, i)] *= signs[i];
         }
     }
     (u, v)
