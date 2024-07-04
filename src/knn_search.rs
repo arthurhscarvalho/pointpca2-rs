@@ -6,7 +6,7 @@ pub fn knn_search<'a>(
     xb: &'a DMatrix<f64>,
     search_size: usize,
 ) -> DMatrix<usize> {
-    let mut kdtree: KdTree<f64, usize, 3, 1024, u32> = KdTree::with_capacity(xa.nrows());
+    let mut kdtree: KdTree<f64, usize, 3, 8192, u32> = KdTree::with_capacity(xa.nrows());
     let mut knn_indices = DMatrix::zeros(xb.nrows(), search_size);
     xa.row_iter().enumerate().for_each(|(idx, point)| {
         kdtree.add(&[point[0], point[1], point[2]], idx);

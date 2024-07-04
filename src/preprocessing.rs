@@ -1,7 +1,7 @@
 use crate::utils;
 use na::DMatrix;
 use ordered_float::OrderedFloat;
-use std::{collections::HashMap, vec};
+use std::{collections::BTreeMap, vec};
 
 fn vec_mean(
     vector: Vec<(OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>)>,
@@ -25,10 +25,10 @@ pub fn duplicate_merging<'a>(
     points: &'a na::DMatrix<f64>,
     colors: &'a na::DMatrix<u8>,
 ) -> (na::DMatrix<f64>, na::DMatrix<u8>) {
-    let mut points_map: HashMap<
+    let mut points_map: BTreeMap<
         (OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>),
         Vec<(OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>)>,
-    > = HashMap::new();
+    > = BTreeMap::new();
     for i in 0..points.nrows() {
         let point = points.row(i);
         let point = (
