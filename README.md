@@ -64,7 +64,6 @@ Feel free to open issues to this project, any kind of contributions are greatly 
 
 ## References
 - [pointpca2](https://github.com/cwi-dis/pointpca2/) - 2023 Grand Challenge on Objective Quality Metrics for Volumetric Contents
-- [pointpca2-py](https://github.com/akaTsunemori/pointpca2-py) - PointPCA 2 - Python
 
 ## License
 GNU GENERAL PUBLIC LICENSE<br>
