@@ -15,8 +15,8 @@ mod utils;
 fn main() {
     let search_size = 81;
     println!("Reading ply");
-    let (points_a, colors_a) = ply_manager::read_ply_as_matrix("/home/arthurc/APSIPA___M-PCCD/references/longdress_vox10_1300.ply");
-    let (points_b, colors_b) = ply_manager::read_ply_as_matrix("/home/arthurc/APSIPA___M-PCCD/PVS/tmc13_longdress_vox10_1300_dec_geom05_text05_trisoup-predlift.ply");
+    let (points_a, colors_a) = ply_manager::read_ply_as_matrix("<path-to-reference>");
+    let (points_b, colors_b) = ply_manager::read_ply_as_matrix("<path-to-test>");
     println!("Preprocessing");
     let (points_a, colors_a) = preprocessing::preprocess_point_cloud(&points_a, &colors_a);
     let (points_b, colors_b) = preprocessing::preprocess_point_cloud(&points_b, &colors_b);
@@ -31,7 +31,7 @@ fn main() {
         &colors_b,
         &knn_indices_a,
         &knn_indices_b,
-        search_size
+        search_size,
     );
     println!("Computing predictors");
     let predictors_result = predictors::compute_predictors(&local_features);
