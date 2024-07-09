@@ -1,4 +1,4 @@
-extern crate kiddo;
+extern crate kdtree;
 extern crate libm;
 extern crate nalgebra as na;
 extern crate ordered_float;
