@@ -6,7 +6,7 @@ This project features a Rust implementation of PointPCA2, designed for faster fe
 ## Roadmap
 - [x] Implementation: a fully working version of PointPCA2, written entirely in Rust
 - [x] Testing: extensively test the project on entire datasets 
-- [ ] Statistical comparison: conduct a t-test to statistically compare the features generated from the orignal and Rust implementations
+- [x] Statistical comparison: conduct a t-test to statistically compare the features generated from the orignal and Rust implementations
 
 ## Setup
 
