@@ -41,7 +41,7 @@ fn compute_covariance_matrix<'a>(x: &'a DMatrix<f64>) -> DMatrix<f64> {
         for j in 0..ncols {
             let mut cov = 0.;
             for k in 0..nrows {
-                cov += (x[(k, i)] - means[j]) * (x[(k, j)] - means[j]);
+                cov += (x[(k, i)] - means[i]) * (x[(k, j)] - means[j]);
             }
             covariance_matrix[(i, j)] = cov / (nrows as f64 - 1.);
         }
