@@ -4,11 +4,11 @@ use nalgebra::{Const, DMatrix, Dyn, Matrix, Scalar, VecStorage};
 use std::ops::AddAssign;
 
 pub fn to_ordered(num: f64) -> OrderedFloat<f64> {
-    return OrderedFloat(num);
+    OrderedFloat(num)
 }
 
 pub fn from_ordered(num: OrderedFloat<f64>) -> f64 {
-    return num.into();
+    num.into()
 }
 
 pub fn concatenate_columns<'a, T>(mat1: &'a DMatrix<T>, mat2: &'a DMatrix<T>) -> DMatrix<T>
@@ -45,5 +45,5 @@ pub fn subtract_row_from_matrix<'a>(
             new_matrix[(i, j)] = matrix[(i, j)] - row_vec[(0, j)];
         }
     }
-    return new_matrix;
+    new_matrix
 }

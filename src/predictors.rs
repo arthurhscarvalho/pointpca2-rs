@@ -4,7 +4,7 @@ use num_traits::Pow;
 use std::{f64::consts::PI, f64::EPSILON};
 
 fn relative_difference(x: f64, y: f64) -> f64 {
-    return 1. - (x - y).abs() / (x.abs() + y.abs() + EPSILON);
+    1. - (x - y).abs() / (x.abs() + y.abs() + EPSILON)
 }
 
 fn iter_relative_difference<'a, T: na::Dim>(
@@ -208,7 +208,8 @@ fn surface_variation<'a, T: na::Dim>(
             x_sum += x[(i, j)];
             y_sum += y[(i, j)];
         }
-        result[(i, 0)] = relative_difference(x[(i, 2)] / (x_sum + EPSILON), y[(i, 2)] / (y_sum + EPSILON));
+        result[(i, 0)] =
+            relative_difference(x[(i, 2)] / (x_sum + EPSILON), y[(i, 2)] / (y_sum + EPSILON));
     }
     result
 }
@@ -222,7 +223,10 @@ fn sphericity<'a, T: na::Dim>(
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
-        result[(i, 0)] = relative_difference(x[(i, 2)] / (x[(i, 0)] + EPSILON), y[(i, 2)] / (y[(i, 0)] + EPSILON));
+        result[(i, 0)] = relative_difference(
+            x[(i, 2)] / (x[(i, 0)] + EPSILON),
+            y[(i, 2)] / (y[(i, 0)] + EPSILON),
+        );
     }
     result
 }
@@ -250,21 +254,20 @@ fn parallelity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>, col: usize) -> DMat
 }
 
 pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> {
-    let nrows = local_features.nrows();
-    let projection_a_to_a = local_features.view((0, 0), (nrows, 3));
-    let projection_b_to_a = local_features.view((0, 3), (nrows, 3));
-    let colors_mean_a = local_features.view((0, 6), (nrows, 3));
-    let points_mean_b = local_features.view((0, 9), (nrows, 3));
-    let colors_mean_b = local_features.view((0, 12), (nrows, 3));
-    let points_variance_a = local_features.view((0, 15), (nrows, 3));
-    let colors_variance_a = local_features.view((0, 18), (nrows, 3));
-    let points_variance_b = local_features.view((0, 21), (nrows, 3));
-    let colors_variance_b = local_features.view((0, 24), (nrows, 3));
-    let points_covariance_ab = local_features.view((0, 27), (nrows, 3));
-    let colors_covariance_ab = local_features.view((0, 30), (nrows, 3));
-    let points_eigenvectors_b_x = local_features.view((0, 33), (nrows, 3));
-    let points_eigenvectors_b_y = local_features.view((0, 36), (nrows, 3));
-    let points_eigenvectors_b_z = local_features.view((0, 39), (nrows, 3));
+    let projection_a_to_a = local_features.columns(0, 3);
+    let projection_b_to_a = local_features.columns(3, 3);
+    let colors_mean_a = local_features.columns(6, 3);
+    let points_mean_b = local_features.columns(9, 3);
+    let colors_mean_b = local_features.columns(12, 3);
+    let points_variance_a = local_features.columns(15, 3);
+    let colors_variance_a = local_features.columns(18, 3);
+    let points_variance_b = local_features.columns(21, 3);
+    let colors_variance_b = local_features.columns(24, 3);
+    let points_covariance_ab = local_features.columns(27, 3);
+    let colors_covariance_ab = local_features.columns(30, 3);
+    let points_eigenvectors_b_x = local_features.columns(33, 3);
+    let points_eigenvectors_b_y = local_features.columns(36, 3);
+    let points_eigenvectors_b_z = local_features.columns(39, 3);
     let matrices = [
         /*
             Textural predictors
@@ -330,8 +333,9 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
         parallelity(&points_eigenvectors_b_x, 0),
         parallelity(&points_eigenvectors_b_z, 2),
     ];
-    let total_cols: usize = matrices.iter().map(|m| m.ncols()).sum();
-    let mut predictors = DMatrix::zeros(nrows, total_cols);
+    let nrows = local_features.nrows();
+    let ncols: usize = matrices.iter().map(|m| m.ncols()).sum();
+    let mut predictors = DMatrix::zeros(nrows, ncols);
     let mut col_offset = 0;
     for matrix in matrices {
         let ncols = matrix.ncols();
