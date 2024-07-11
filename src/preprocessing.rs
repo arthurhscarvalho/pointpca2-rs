@@ -69,7 +69,7 @@ pub fn duplicate_merging<'a>(
             panic!("Error during duplicate points merging.")
         }
     }
-    return (points_result, colors_result);
+    (points_result, colors_result)
 }
 
 fn rgb_to_yuv<'a>(rgb: &'a na::DMatrix<u8>) -> na::DMatrix<u8> {
@@ -108,5 +108,5 @@ pub fn preprocess_point_cloud<'a>(
 ) -> (na::DMatrix<f64>, na::DMatrix<u8>) {
     let (points_merged, colors_merged) = duplicate_merging(points, colors);
     let colors_yuv = rgb_to_yuv(&colors_merged);
-    return (points_merged, colors_yuv);
+    (points_merged, colors_yuv)
 }

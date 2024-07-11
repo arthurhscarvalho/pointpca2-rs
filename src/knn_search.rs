@@ -1,30 +1,25 @@
-use kdtree::distance::squared_euclidean;
-use kdtree::KdTree;
+use kd_tree;
 use na::DMatrix;
+use rayon::prelude::*;
 
 pub fn knn_search<'a>(
     xa: &'a DMatrix<f64>,
     xb: &'a DMatrix<f64>,
     search_size: usize,
 ) -> DMatrix<usize> {
-    let mut kdtree = KdTree::new(3);
+    let points: Vec<[f64; 3]> = xa.row_iter().map(|p| [p[0], p[1], p[2]]).collect();
+    let kdtree = kd_tree::KdIndexTree3::par_build_by_ordered_float(&points);
     let mut knn_indices = DMatrix::zeros(xb.nrows(), search_size);
-    xa.row_iter().enumerate().for_each(|(idx, point)| {
-        kdtree.add([point[0], point[1], point[2]], idx).unwrap();
-    });
-    xb.row_iter().enumerate().for_each(|(idx, point)| {
-        let neighbors = kdtree
-            .nearest(
-                &[point[0], point[1], point[2]],
-                search_size,
-                &squared_euclidean,
-            )
-            .unwrap();
-        let indices = neighbors.iter().map(|nbr| *nbr.1).collect::<Vec<usize>>();
-        let indices = DMatrix::from_row_slice(1, search_size, &indices);
-        knn_indices
-            .view_mut((idx, 0), (1, search_size))
-            .copy_from(&indices);
-    });
-    return knn_indices;
+    let mut knn_indices_rows: Vec<_> = knn_indices.row_iter_mut().collect();
+    knn_indices_rows
+        .par_iter_mut()
+        .enumerate()
+        .for_each(|(idx, row)| {
+            let point = xb.row(idx);
+            let neighbors = kdtree.nearests(&[point[0], point[1], point[2]], search_size);
+            let indices: Vec<usize> = neighbors.iter().map(|nbr| *nbr.item).collect();
+            let indices = DMatrix::from_row_slice(1, search_size, &indices);
+            row.copy_from(&indices);
+        });
+    knn_indices
 }

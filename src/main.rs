@@ -1,8 +1,9 @@
-extern crate kdtree;
+extern crate kd_tree;
 extern crate libm;
 extern crate nalgebra as na;
 extern crate ordered_float;
 extern crate ply_rs;
+extern crate rayon;
 
 mod features;
 mod knn_search;
