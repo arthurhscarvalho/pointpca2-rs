@@ -129,7 +129,7 @@ We can also calculate the absolute differences between corresponding features an
 
 Finally, we compare the correlation indices, splitting the dataset and fitting the features similarly to the previous section.
 
-<img src="https://i.imgur.com/tJBBnPr.png">
+<img src="https://i.imgur.com/td9a2wp.png">
 </details>
 
 ## Contributing
