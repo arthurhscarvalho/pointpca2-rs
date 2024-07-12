@@ -144,8 +144,7 @@ Feel free to open issues to this project, any kind of contributions are greatly 
   E. Alexiou, I. Viola, T. M. Borges, T. A. Fonseca, R. L. De Queiroz, and T. Ebrahimi, “A comprehensive study of the rate-distortion performance in mpeg point cloud compression,” APSIPA Transactions on Signal and Information Processing, vol. 8, 2019
 
 ## License
-GNU GENERAL PUBLIC LICENSE<br>
-Version 2, June 1991
+MIT License
 
 ---
 
