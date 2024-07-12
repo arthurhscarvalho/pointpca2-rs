@@ -26,18 +26,18 @@ fn main() {
     let knn_indices_b = knn_search::knn_search(&points_b, &points_a, search_size);
     println!("Computing local features");
     let local_features = features::compute_features(
-        &points_a,
-        &colors_a,
-        &points_b,
-        &colors_b,
-        &knn_indices_a,
-        &knn_indices_b,
+        points_a,
+        colors_a,
+        points_b,
+        colors_b,
+        knn_indices_a,
+        knn_indices_b,
         search_size,
     );
     println!("Computing predictors");
-    let predictors_result = predictors::compute_predictors(&local_features);
+    let predictors_result = predictors::compute_predictors(local_features);
     println!("Pooling predictors");
-    let pooled_predictors = pooling::mean_pooling(&predictors_result);
+    let pooled_predictors = pooling::mean_pooling(predictors_result);
     println!("Predictors:");
     for col in pooled_predictors.iter() {
         print!("{:.4}  ", *col);

@@ -79,13 +79,13 @@ fn slice_from_knn_indices<'a>(
     (selected_points, selected_colors)
 }
 
-pub fn compute_features<'a>(
-    points_a: &'a na::DMatrix<f64>,
-    colors_a: &'a na::DMatrix<u8>,
-    points_b: &'a na::DMatrix<f64>,
-    colors_b: &'a na::DMatrix<u8>,
-    knn_indices_a: &'a na::DMatrix<usize>,
-    knn_indices_b: &'a na::DMatrix<usize>,
+pub fn compute_features(
+    points_a: na::DMatrix<f64>,
+    colors_a: na::DMatrix<u8>,
+    points_b: na::DMatrix<f64>,
+    colors_b: na::DMatrix<u8>,
+    knn_indices_a: na::DMatrix<usize>,
+    knn_indices_b: na::DMatrix<usize>,
     search_size: usize,
 ) -> DMatrix<f64> {
     let nrows = points_a.nrows();
@@ -99,9 +99,9 @@ pub fn compute_features<'a>(
         .for_each(|(i, row)| {
             // Slice points and colors from their respective knn indices
             let (sl_points_a, sl_colors_a) =
-                slice_from_knn_indices(points_a, colors_a, knn_indices_a, i, search_size);
+                slice_from_knn_indices(&points_a, &colors_a, &knn_indices_a, i, search_size);
             let (sl_points_b, sl_colors_b) =
-                slice_from_knn_indices(points_b, colors_b, knn_indices_b, i, search_size);
+                slice_from_knn_indices(&points_b, &colors_b, &knn_indices_b, i, search_size);
             // Principal components of reference data (new orthonormal basis)
             let eigenvectors_a = compute_eigenvectors(&sl_points_a);
             // Project reference and distorted data onto the new orthonormal basis
