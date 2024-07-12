@@ -253,7 +253,7 @@ fn parallelity<'a, T: na::Dim>(x: &'a MatrixView<f64, T, T>, col: usize) -> DMat
     result
 }
 
-pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> {
+pub fn compute_predictors(local_features: DMatrix<f64>) -> DMatrix<f64> {
     let projection_a_to_a = local_features.columns(0, 3);
     let projection_b_to_a = local_features.columns(3, 3);
     let colors_mean_a = local_features.columns(6, 3);
