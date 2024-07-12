@@ -268,79 +268,165 @@ pub fn compute_predictors<'a>(local_features: &'a DMatrix<f64>) -> DMatrix<f64> 
     let points_eigenvectors_b_x = local_features.columns(33, 3);
     let points_eigenvectors_b_y = local_features.columns(36, 3);
     let points_eigenvectors_b_z = local_features.columns(39, 3);
-    let matrices = [
-        /*
-            Textural predictors
-        */
-        // Relative difference in mean color values
-        iter_relative_difference(&colors_mean_a, &colors_mean_b),
-        // Relative difference in color variance
-        iter_relative_difference(&colors_variance_a, &colors_variance_b),
-        // Covariance differences between color variances
-        covariance_differences(
+    let nrows = local_features.nrows();
+    let ncols = 40;
+    let mut predictors = DMatrix::zeros(nrows, ncols);
+    /*
+        Textural predictors
+    */
+    // Relative difference in mean color values
+    predictors
+        .columns_mut(0, 3)
+        .copy_from(&iter_relative_difference(&colors_mean_a, &colors_mean_b));
+    // Relative difference in color variance
+    predictors
+        .columns_mut(3, 3)
+        .copy_from(&iter_relative_difference(
+            &colors_variance_a,
+            &colors_variance_b,
+        ));
+    // Covariance differences between color variances
+    predictors
+        .columns_mut(6, 3)
+        .copy_from(&covariance_differences(
             &colors_variance_a,
             &colors_variance_b,
             &colors_covariance_ab,
-        ),
-        // Sum of variances of textures
-        textural_variance_sum(&colors_variance_a, &colors_variance_b),
-        // Relative difference in omnivariance of textures
-        omnivariance_differences(&colors_variance_a, &colors_variance_b),
-        // Entropy of textures
-        entropy(&colors_variance_a, &colors_variance_b),
-        /*
-            Geometric predictors
-        */
-        // Euclidean distance between distorted and reference points (error vector)
-        euclidean_distances(&projection_a_to_a, &projection_b_to_a),
-        // Projected distances of vectors between distorted and reference points from reference planes
-        vector_projected_distances(&projection_a_to_a, &projection_b_to_a, 0),
-        vector_projected_distances(&projection_a_to_a, &projection_b_to_a, 1),
-        vector_projected_distances(&projection_a_to_a, &projection_b_to_a, 2),
-        // Projected distances of reference points from reference planes
-        point_projected_distances(&projection_a_to_a),
-        // Euclidean distance between distorted point and reference centroid
-        point_to_centroid_distances(&projection_b_to_a),
-        // Projected distances of distorted point from reference planes
-        point_projected_distances(&projection_b_to_a),
-        // Euclidean distance between distorted centroid and reference centroid
-        point_to_centroid_distances(&points_mean_b),
-        // Projected distances of distorted centroid from reference planes
-        point_projected_distances(&points_mean_b),
-        // Relative difference in point variance
-        iter_relative_difference(&points_variance_a, &points_variance_b),
-        // Covariance differences between point variances
-        covariance_differences(
+        ));
+    // Sum of variances of textures
+    predictors.column_mut(9).copy_from(&textural_variance_sum(
+        &colors_variance_a,
+        &colors_variance_b,
+    ));
+    // Relative difference in omnivariance of textures
+    predictors
+        .column_mut(10)
+        .copy_from(&omnivariance_differences(
+            &colors_variance_a,
+            &colors_variance_b,
+        ));
+    // Entropy of textures
+    predictors
+        .column_mut(11)
+        .copy_from(&entropy(&colors_variance_a, &colors_variance_b));
+    /*
+        Geometric predictors
+    */
+    // Euclidean distance between distorted and reference points (error vector)
+    predictors
+        .column_mut(12)
+        .copy_from(&euclidean_distances(&projection_a_to_a, &projection_b_to_a));
+    // Projected distances of vectors between distorted and reference points from reference planes
+    predictors
+        .column_mut(13)
+        .copy_from(&vector_projected_distances(
+            &projection_a_to_a,
+            &projection_b_to_a,
+            0,
+        ));
+    predictors
+        .column_mut(14)
+        .copy_from(&vector_projected_distances(
+            &projection_a_to_a,
+            &projection_b_to_a,
+            1,
+        ));
+    predictors
+        .column_mut(15)
+        .copy_from(&vector_projected_distances(
+            &projection_a_to_a,
+            &projection_b_to_a,
+            2,
+        ));
+    // Projected distances of reference points from reference planes
+    predictors
+        .columns_mut(16, 2)
+        .copy_from(&point_projected_distances(&projection_a_to_a));
+    // Euclidean distance between distorted point and reference centroid
+    predictors
+        .column_mut(18)
+        .copy_from(&point_to_centroid_distances(&projection_b_to_a));
+    // Projected distances of distorted point from reference planes
+    predictors
+        .columns_mut(19, 2)
+        .copy_from(&point_projected_distances(&projection_b_to_a));
+    // Euclidean distance between distorted centroid and reference centroid
+    predictors
+        .column_mut(21)
+        .copy_from(&point_to_centroid_distances(&points_mean_b));
+    // Projected distances of distorted centroid from reference planes
+    predictors
+        .columns_mut(22, 2)
+        .copy_from(&point_projected_distances(&points_mean_b));
+    // Relative difference in point variance
+    predictors
+        .columns_mut(24, 3)
+        .copy_from(&iter_relative_difference(
+            &points_variance_a,
+            &points_variance_b,
+        ));
+    // Covariance differences between point variances
+    predictors
+        .columns_mut(27, 3)
+        .copy_from(&covariance_differences(
             &points_variance_a,
             &points_variance_b,
             &points_covariance_ab,
-        ),
-        // Relative difference in omnivariance of points
-        omnivariance_differences(&points_variance_a, &points_variance_b),
-        // Entropy of points
-        entropy(&points_variance_a, &points_variance_b),
-        // Relative difference in anisotropy, planarity, and linearity of points
-        anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 0, 2),
-        anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 1, 2),
-        anisotropy_planarity_linearity(&points_variance_a, &points_variance_b, 0, 1),
-        // Relative difference in surface variation of points
-        surface_variation(&points_variance_a, &points_variance_b),
-        // Relative difference in sphericity of points
-        sphericity(&points_variance_a, &points_variance_b),
-        // Angular similarity between distorted and reference planes
-        angular_similarity(&points_eigenvectors_b_y),
-        // Parallelity of distorted planes
-        parallelity(&points_eigenvectors_b_x, 0),
-        parallelity(&points_eigenvectors_b_z, 2),
-    ];
-    let nrows = local_features.nrows();
-    let ncols: usize = matrices.iter().map(|m| m.ncols()).sum();
-    let mut predictors = DMatrix::zeros(nrows, ncols);
-    let mut col_offset = 0;
-    for matrix in matrices {
-        let ncols = matrix.ncols();
-        predictors.columns_mut(col_offset, ncols).copy_from(&matrix);
-        col_offset += ncols;
-    }
+        ));
+    // Relative difference in omnivariance of points
+    predictors
+        .column_mut(30)
+        .copy_from(&omnivariance_differences(
+            &points_variance_a,
+            &points_variance_b,
+        ));
+    // Entropy of points
+    predictors
+        .column_mut(31)
+        .copy_from(&entropy(&points_variance_a, &points_variance_b));
+    // Relative difference in anisotropy, planarity, and linearity of points
+    predictors
+        .column_mut(32)
+        .copy_from(&anisotropy_planarity_linearity(
+            &points_variance_a,
+            &points_variance_b,
+            0,
+            2,
+        ));
+    predictors
+        .column_mut(33)
+        .copy_from(&anisotropy_planarity_linearity(
+            &points_variance_a,
+            &points_variance_b,
+            1,
+            2,
+        ));
+    predictors
+        .column_mut(34)
+        .copy_from(&anisotropy_planarity_linearity(
+            &points_variance_a,
+            &points_variance_b,
+            0,
+            1,
+        ));
+    // Relative difference in surface variation of points
+    predictors
+        .column_mut(35)
+        .copy_from(&surface_variation(&points_variance_a, &points_variance_b));
+    // Relative difference in sphericity of points
+    predictors
+        .column_mut(36)
+        .copy_from(&sphericity(&points_variance_a, &points_variance_b));
+    // Angular similarity between distorted and reference planes
+    predictors
+        .column_mut(37)
+        .copy_from(&angular_similarity(&points_eigenvectors_b_y));
+    // Parallelity of distorted planes
+    predictors
+        .column_mut(38)
+        .copy_from(&parallelity(&points_eigenvectors_b_x, 0));
+    predictors
+        .column_mut(39)
+        .copy_from(&parallelity(&points_eigenvectors_b_z, 2));
     predictors
 }
