@@ -11,6 +11,7 @@ mod ply_manager;
 mod pooling;
 mod predictors;
 mod preprocessing;
+mod spatial_metrics;
 mod utils;
 
 fn main() {

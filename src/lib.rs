@@ -11,4 +11,5 @@ pub mod ply_manager;
 pub mod pooling;
 pub mod predictors;
 pub mod preprocessing;
+pub mod spatial_metrics;
 pub mod utils;

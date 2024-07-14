@@ -52,7 +52,9 @@ fn compute_covariance_matrix<'a>(x: &'a DMatrix<f64>) -> DMatrix<f64> {
 
 fn compute_eigenvectors<'a>(matrix: &'a DMatrix<f64>) -> DMatrix<f64> {
     let covariance_matrix = compute_covariance_matrix(matrix);
-    let eigenvectors = covariance_matrix.svd(true, true);
+    let eigenvectors = covariance_matrix
+        .try_svd(true, true, f64::EPSILON, 0)
+        .unwrap();
     let u = eigenvectors.u.unwrap();
     let v_t = eigenvectors.v_t.unwrap();
     let (u_corrected, _) = svd_sign_correction(u, v_t);
@@ -128,15 +130,9 @@ pub fn compute_features(
             // Variances and covariance
             let variance_a = mean_deviation_a.map(|x| x * x).row_mean();
             let variance_b = mean_deviation_b.map(|x| x * x).row_mean();
-            let mut covariance_ab = mean_deviation_a.clone();
-            for j in 0..covariance_ab.nrows() {
-                for k in 0..covariance_ab.ncols() {
-                    covariance_ab[(j, k)] *= mean_deviation_b[(j, k)];
-                }
-            }
-            let covariance_ab = covariance_ab.row_mean();
+            let covariance_ab = mean_deviation_a.component_mul(&mean_deviation_b).row_mean();
             // Principal components of projected distorted data
-            let eigenvectors_b = compute_eigenvectors(&projection_b_to_a);
+            let eigenvectors_b = compute_eigenvectors(&projection_b_to_a).transpose();
             // Update local features
             row.columns_mut(0, 3).copy_from(&projection_a_to_a.row(0));
             row.columns_mut(3, 3).copy_from(&projection_b_to_a.row(0));
@@ -145,12 +141,9 @@ pub fn compute_features(
             row.columns_mut(15, 6).copy_from(&variance_a);
             row.columns_mut(21, 6).copy_from(&variance_b);
             row.columns_mut(27, 6).copy_from(&covariance_ab);
-            row.columns_mut(33, 3)
-                .copy_from(&eigenvectors_b.row(0).columns(0, 3));
-            row.columns_mut(36, 3)
-                .copy_from(&eigenvectors_b.row(1).columns(0, 3));
-            row.columns_mut(39, 3)
-                .copy_from(&eigenvectors_b.row(2).columns(0, 3));
+            row.columns_mut(33, 3).copy_from(&eigenvectors_b.row(0));
+            row.columns_mut(36, 3).copy_from(&eigenvectors_b.row(1));
+            row.columns_mut(39, 3).copy_from(&eigenvectors_b.row(2));
         });
     local_features
 }

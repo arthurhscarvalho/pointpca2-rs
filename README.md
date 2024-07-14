@@ -53,7 +53,7 @@ fn main() {
 }
 ```
 
-## Validity
+## Validation
 A statistical test was conducted to validate the implementation's accuracy and reliability. Feature sets were generated from each implementation using the entire APSIPA dataset (in references). These features were split into train and test sets using GroupKFold. The training features were then fitted to the subjective scores from the dataset. Pearson and Spearman correlation coefficients were calculated, and a paired t-test was performed on these correlations.
 
 <details>
