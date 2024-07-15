@@ -52,9 +52,7 @@ fn compute_covariance_matrix<'a>(x: &'a DMatrix<f64>) -> DMatrix<f64> {
 
 fn compute_eigenvectors<'a>(matrix: &'a DMatrix<f64>) -> DMatrix<f64> {
     let covariance_matrix = compute_covariance_matrix(matrix);
-    let eigenvectors = covariance_matrix
-        .try_svd(true, true, f64::EPSILON, 0)
-        .unwrap();
+    let eigenvectors = covariance_matrix.svd(true, true);
     let u = eigenvectors.u.unwrap();
     let v_t = eigenvectors.v_t.unwrap();
     let (u_corrected, _) = svd_sign_correction(u, v_t);
