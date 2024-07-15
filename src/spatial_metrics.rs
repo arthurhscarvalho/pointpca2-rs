@@ -72,7 +72,7 @@ pub fn omnivariance_differences<'a, T: na::Dim>(
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
         let x_prod: f64 = x.row(i).product();
-        let y_prod: f64 = x.row(i).product();
+        let y_prod: f64 = y.row(i).product();
         result[(i, 0)] = relative_difference(x_prod.cbrt(), y_prod.cbrt());
     }
     result
