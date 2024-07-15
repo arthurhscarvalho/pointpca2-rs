@@ -36,16 +36,11 @@ pub fn covariance_differences<'a, T: na::Dim>(
     let nrows = x.nrows();
     let ncols = x.ncols();
     let mut result = DMatrix::zeros(nrows, ncols);
-    let mut x_ij: f64;
-    let mut y_ij: f64;
-    let mut z_ij: f64;
     for i in 0..nrows {
         for j in 0..ncols {
-            x_ij = x[(i, j)];
-            y_ij = y[(i, j)];
-            z_ij = z[(i, j)];
-            result[(i, j)] =
-                (x_ij.sqrt() * y_ij.sqrt() - z_ij).abs() / (x_ij.sqrt() * y_ij.sqrt() + EPSILON);
+            let sqrt_product_diff = (x[(i, j)].sqrt() * y[(i, j)].sqrt() - z[(i, j)]).abs();
+            let sqrt_product_norm = x[(i, j)].sqrt() * y[(i, j)].sqrt() + EPSILON;
+            result[(i, j)] = sqrt_product_diff / sqrt_product_norm;
         }
     }
     result
@@ -58,15 +53,10 @@ pub fn textural_variance_sum<'a, T: na::Dim>(
     assert_eq!(x.nrows(), y.nrows(), "Matrices must have the same shape.");
     assert_eq!(x.ncols(), y.ncols(), "Matrices must have the same shape.");
     let nrows = x.nrows();
-    let ncols = x.ncols();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
-        let mut x_sum: f64 = 0.;
-        let mut y_sum: f64 = 0.;
-        for j in 0..ncols {
-            x_sum += x[(i, j)];
-            y_sum += y[(i, j)];
-        }
+        let x_sum: f64 = x.row(i).sum();
+        let y_sum: f64 = y.row(i).sum();
         result[(i, 0)] = relative_difference(x_sum, y_sum);
     }
     result
@@ -79,15 +69,10 @@ pub fn omnivariance_differences<'a, T: na::Dim>(
     assert_eq!(x.nrows(), y.nrows(), "Matrices must have the same shape.");
     assert_eq!(x.ncols(), y.ncols(), "Matrices must have the same shape.");
     let nrows = x.nrows();
-    let ncols = x.ncols();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
-        let mut x_prod: f64 = 1.;
-        let mut y_prod: f64 = 1.;
-        for j in 0..ncols {
-            x_prod *= x[(i, j)];
-            y_prod *= y[(i, j)];
-        }
+        let x_prod: f64 = x.row(i).product();
+        let y_prod: f64 = x.row(i).product();
         result[(i, 0)] = relative_difference(x_prod.cbrt(), y_prod.cbrt());
     }
     result
@@ -199,15 +184,10 @@ pub fn surface_variation<'a, T: na::Dim>(
     assert_eq!(x.nrows(), y.nrows(), "Matrices must have the same shape.");
     assert_eq!(x.ncols(), y.ncols(), "Matrices must have the same shape.");
     let nrows = x.nrows();
-    let ncols = x.ncols();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
-        let mut x_sum: f64 = 0.;
-        let mut y_sum: f64 = 0.;
-        for j in 0..ncols {
-            x_sum += x[(i, j)];
-            y_sum += y[(i, j)];
-        }
+        let x_sum: f64 = x.row(i).sum();
+        let y_sum: f64 = y.row(i).sum();
         result[(i, 0)] =
             relative_difference(x[(i, 2)] / (x_sum + EPSILON), y[(i, 2)] / (y_sum + EPSILON));
     }

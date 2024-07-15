@@ -65,7 +65,7 @@ fn slice_from_knn_indices<'a>(
     knn_indices: &'a na::DMatrix<usize>,
     knn_row: usize,
     search_size: usize,
-) -> (DMatrix<f64>, DMatrix<u8>) {
+) -> (DMatrix<f64>, DMatrix<f64>) {
     let knn_indices_row = knn_indices.row(knn_row);
     let sl_knn_indices = knn_indices_row.columns(0, search_size);
     let nrows = search_size;
@@ -74,7 +74,9 @@ fn slice_from_knn_indices<'a>(
     let mut selected_colors = DMatrix::zeros(nrows, ncols);
     for (i, j) in sl_knn_indices.iter().enumerate() {
         selected_points.row_mut(i).copy_from(&points.row(*j));
-        selected_colors.row_mut(i).copy_from(&colors.row(*j));
+        selected_colors
+            .row_mut(i)
+            .copy_from(&colors.row(*j).map(|x| x as f64));
     }
     (selected_points, selected_colors)
 }
@@ -112,16 +114,10 @@ pub fn compute_features(
                 utils::subtract_row_from_matrix(&sl_points_b, &sl_points_a.row_mean())
                     * &eigenvectors_a;
             // Mean values for projected geometric data and texture data
-            let sl_colors_a_f64 = sl_colors_a.map(|x| x as f64);
-            let sl_colors_b_f64 = sl_colors_b.map(|x| x as f64);
-            let mean_a =
-                utils::concatenate_columns(&projection_a_to_a, &sl_colors_a_f64).row_mean();
-            let mean_b =
-                utils::concatenate_columns(&projection_b_to_a, &sl_colors_b_f64).row_mean();
-            let proj_colors_a_concat =
-                utils::concatenate_columns(&projection_a_to_a, &sl_colors_a_f64);
-            let proj_colors_b_concat =
-                utils::concatenate_columns(&projection_b_to_a, &sl_colors_b_f64);
+            let mean_a = utils::concatenate_columns(&projection_a_to_a, &sl_colors_a).row_mean();
+            let mean_b = utils::concatenate_columns(&projection_b_to_a, &sl_colors_b).row_mean();
+            let proj_colors_a_concat = utils::concatenate_columns(&projection_a_to_a, &sl_colors_a);
+            let proj_colors_b_concat = utils::concatenate_columns(&projection_b_to_a, &sl_colors_b);
             // Deviation from mean
             let mean_deviation_a = utils::subtract_row_from_matrix(&proj_colors_a_concat, &mean_a);
             let mean_deviation_b = utils::subtract_row_from_matrix(&proj_colors_b_concat, &mean_b);
