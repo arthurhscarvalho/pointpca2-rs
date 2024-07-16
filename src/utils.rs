@@ -43,6 +43,6 @@ pub fn subtract_row_from_matrix<'a>(
     let mut new_matrix = matrix.clone();
     new_matrix
         .row_iter_mut()
-        .for_each(|mut row| row.add_assign(row_vec));
+        .for_each(|mut row| row -= row_vec);
     new_matrix
 }
