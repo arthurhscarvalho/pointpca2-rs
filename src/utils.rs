@@ -11,6 +11,34 @@ pub fn from_ordered(num: OrderedFloat<f64>) -> f64 {
     num.into()
 }
 
+pub fn print_if_verbose<'a>(string: &'a str, verbose: &'a bool) {
+    if *verbose {
+        println!("{}", string);
+    }
+}
+
+pub fn slice_from_knn_indices<'a>(
+    points: &'a na::DMatrix<f64>,
+    colors: &'a na::DMatrix<u8>,
+    knn_indices: &'a na::DMatrix<usize>,
+    knn_row: usize,
+    search_size: usize,
+) -> (DMatrix<f64>, DMatrix<f64>) {
+    let knn_indices_row = knn_indices.row(knn_row);
+    let sl_knn_indices = knn_indices_row.columns(0, search_size);
+    let nrows = search_size;
+    let ncols = points.ncols();
+    let mut selected_points = DMatrix::zeros(nrows, ncols);
+    let mut selected_colors = DMatrix::zeros(nrows, ncols);
+    for (i, j) in sl_knn_indices.iter().enumerate() {
+        selected_points.row_mut(i).copy_from(&points.row(*j));
+        selected_colors
+            .row_mut(i)
+            .copy_from(&colors.row(*j).map(|x| x as f64));
+    }
+    (selected_points, selected_colors)
+}
+
 pub fn concatenate_columns<'a, T>(mat1: &'a DMatrix<T>, mat2: &'a DMatrix<T>) -> DMatrix<T>
 where
     T: Scalar + Copy + AddAssign + num_traits::identities::Zero,
@@ -41,8 +69,6 @@ pub fn subtract_row_from_matrix<'a>(
         "Arguments must have the same number of columns."
     );
     let mut new_matrix = matrix.clone();
-    new_matrix
-        .row_iter_mut()
-        .for_each(|mut row| row -= row_vec);
+    new_matrix.row_iter_mut().for_each(|mut row| row -= row_vec);
     new_matrix
 }

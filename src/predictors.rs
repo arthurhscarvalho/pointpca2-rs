@@ -13,9 +13,9 @@ pub fn compute_predictors(local_features: DMatrix<f64>) -> DMatrix<f64> {
     let colors_variance_b = local_features.columns(24, 3);
     let points_covariance_ab = local_features.columns(27, 3);
     let colors_covariance_ab = local_features.columns(30, 3);
-    let points_eigenvectors_b_x = local_features.columns(33, 3);
-    let points_eigenvectors_b_y = local_features.columns(36, 3);
-    let points_eigenvectors_b_z = local_features.columns(39, 3);
+    let eigenvectors_b_x = local_features.columns(33, 3);
+    let eigenvectors_b_y = local_features.columns(36, 3);
+    let eigenvectors_b_z = local_features.columns(39, 3);
     let nrows = local_features.nrows();
     let ncols = 40;
     let mut predictors = DMatrix::zeros(nrows, ncols);
@@ -196,15 +196,13 @@ pub fn compute_predictors(local_features: DMatrix<f64>) -> DMatrix<f64> {
     // Angular similarity between distorted and reference planes
     predictors
         .column_mut(37)
-        .copy_from(&spatial_metrics::angular_similarity(
-            &points_eigenvectors_b_y,
-        ));
+        .copy_from(&spatial_metrics::angular_similarity(&eigenvectors_b_y));
     // Parallelity of distorted planes
     predictors
         .column_mut(38)
-        .copy_from(&spatial_metrics::parallelity(&points_eigenvectors_b_x, 0));
+        .copy_from(&spatial_metrics::parallelity(&eigenvectors_b_x, 0));
     predictors
         .column_mut(39)
-        .copy_from(&spatial_metrics::parallelity(&points_eigenvectors_b_z, 2));
+        .copy_from(&spatial_metrics::parallelity(&eigenvectors_b_z, 2));
     predictors
 }
