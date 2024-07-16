@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "pointpca2-rust"
+name = "pointpca2-rs"
 description = "An implementation of PointPCA2 in Rust"
 version = "1.3.0"
 readme = "README.md"
@@ -17,5 +17,5 @@ rayon = "1.10.0"
 kd-tree = {version = "0.6.0", features = ["rayon"]}
 
 [lib]
-name = "pointpca2_rust"
+name = "pointpca2_rs"
 path = "src/lib.rs"
