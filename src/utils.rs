@@ -34,16 +34,15 @@ pub fn subtract_row_from_matrix<'a>(
     matrix: &'a DMatrix<f64>,
     row_vec: &'a Matrix<f64, Const<1>, Dyn, VecStorage<f64, Const<1>, Dyn>>,
 ) -> DMatrix<f64> {
-    if row_vec.nrows() != 1 || row_vec.ncols() != matrix.ncols() {
-        panic!("Row vector must have the same dimensions as the matrix columns.");
-    }
-    let nrows = matrix.nrows();
-    let ncols = matrix.ncols();
-    let mut new_matrix = DMatrix::zeros(nrows, ncols);
-    for i in 0..nrows {
-        for j in 0..ncols {
-            new_matrix[(i, j)] = matrix[(i, j)] - row_vec[(0, j)];
-        }
-    }
+    assert_eq!(row_vec.nrows(), 1, "row_vec must be a single-row vector.");
+    assert_eq!(
+        matrix.ncols(),
+        row_vec.ncols(),
+        "Arguments must have the same number of columns."
+    );
+    let mut new_matrix = matrix.clone();
+    new_matrix
+        .row_iter_mut()
+        .for_each(|mut row| row.add_assign(row_vec));
     new_matrix
 }
