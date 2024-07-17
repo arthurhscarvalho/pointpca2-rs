@@ -44,8 +44,8 @@ pub fn compute_features(
             let mean_deviation_a = utils::subtract_row_from_matrix(&proj_colors_a_concat, &mean_a);
             let mean_deviation_b = utils::subtract_row_from_matrix(&proj_colors_b_concat, &mean_b);
             // Variances and covariance
-            let variance_a = mean_deviation_a.map(|x| x * x).row_mean();
-            let variance_b = mean_deviation_b.map(|x| x * x).row_mean();
+            let variance_a = mean_deviation_a.map(|x| x.powi(2)).row_mean();
+            let variance_b = mean_deviation_b.map(|x| x.powi(2)).row_mean();
             let covariance_ab = mean_deviation_a.component_mul(&mean_deviation_b).row_mean();
             // Principal components of projected distorted data
             let eigenvectors_b = eigenvectors::compute_eigenvectors(&projection_b_to_a).transpose();
