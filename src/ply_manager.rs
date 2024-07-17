@@ -1,4 +1,4 @@
-use nalgebra::DMatrix;
+use na::DMatrix;
 use ply_rs::{parser, ply, ply::DefaultElement, ply::Property};
 
 fn extract_value(property: &Property) -> f64 {

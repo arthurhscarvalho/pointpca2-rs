@@ -4,12 +4,12 @@ use na::DMatrix;
 use rayon::prelude::*;
 
 pub fn compute_features(
-    points_a: na::DMatrix<f64>,
-    colors_a: na::DMatrix<u8>,
-    points_b: na::DMatrix<f64>,
-    colors_b: na::DMatrix<u8>,
-    knn_indices_a: na::DMatrix<usize>,
-    knn_indices_b: na::DMatrix<usize>,
+    points_a: DMatrix<f64>,
+    colors_a: DMatrix<u8>,
+    points_b: DMatrix<f64>,
+    colors_b: DMatrix<u8>,
+    knn_indices_a: DMatrix<usize>,
+    knn_indices_b: DMatrix<usize>,
     search_size: usize,
 ) -> DMatrix<f64> {
     let nrows = points_a.nrows();
@@ -29,12 +29,11 @@ pub fn compute_features(
             // Principal components of reference data (new orthonormal basis)
             let eigenvectors_a = eigenvectors::compute_eigenvectors(&sl_points_a);
             // Project reference and distorted data onto the new orthonormal basis
+            let sl_points_a_mean = sl_points_a.row_mean();
             let projection_a_to_a =
-                utils::subtract_row_from_matrix(&sl_points_a, &sl_points_a.row_mean())
-                    * &eigenvectors_a;
+                utils::subtract_row_from_matrix(&sl_points_a, &sl_points_a_mean) * &eigenvectors_a;
             let projection_b_to_a =
-                utils::subtract_row_from_matrix(&sl_points_b, &sl_points_a.row_mean())
-                    * &eigenvectors_a;
+                utils::subtract_row_from_matrix(&sl_points_b, &sl_points_a_mean) * &eigenvectors_a;
             // Mean values for projected geometric data and texture data
             let mean_a = utils::concatenate_columns(&projection_a_to_a, &sl_colors_a).row_mean();
             let mean_b = utils::concatenate_columns(&projection_b_to_a, &sl_colors_b).row_mean();

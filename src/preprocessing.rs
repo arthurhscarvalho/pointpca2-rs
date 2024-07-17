@@ -1,17 +1,17 @@
 use crate::utils;
 use na::DMatrix;
 use ordered_float::OrderedFloat;
-use std::{collections::BTreeMap, vec};
+use std::collections::BTreeMap;
 
 fn vec_mean(
-    vector: Vec<(OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>)>,
+    vector: &Vec<(OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>)>,
 ) -> (f64, f64, f64) {
     let vec_len = vector.len() as f64;
     let mut vec_sum = (0., 0., 0.);
     for (a, b, c) in vector {
-        vec_sum.0 += utils::from_ordered(a);
-        vec_sum.1 += utils::from_ordered(b);
-        vec_sum.2 += utils::from_ordered(c);
+        vec_sum.0 += utils::from_ordered(*a);
+        vec_sum.1 += utils::from_ordered(*b);
+        vec_sum.2 += utils::from_ordered(*c);
     }
     let mean = (
         vec_sum.0 / vec_len,
@@ -22,9 +22,9 @@ fn vec_mean(
 }
 
 pub fn duplicate_merging<'a>(
-    points: &'a na::DMatrix<f64>,
-    colors: &'a na::DMatrix<u8>,
-) -> (na::DMatrix<f64>, na::DMatrix<u8>) {
+    points: &'a DMatrix<f64>,
+    colors: &'a DMatrix<u8>,
+) -> (DMatrix<f64>, DMatrix<u8>) {
     let mut points_map: BTreeMap<
         (OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>),
         Vec<(OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>)>,
@@ -42,11 +42,7 @@ pub fn duplicate_merging<'a>(
             utils::to_ordered(color[1] as f64),
             utils::to_ordered(color[2] as f64),
         );
-        if !points_map.contains_key(&point) {
-            points_map.insert(point, vec![color]);
-        } else if let Some(colors) = points_map.get_mut(&point) {
-            colors.push(color);
-        };
+        points_map.entry(point).or_insert_with(Vec::new).push(color);
     }
     let nrows = points_map.len();
     let mut points_result = DMatrix::zeros(nrows, 3);
@@ -57,22 +53,19 @@ pub fn duplicate_merging<'a>(
             utils::from_ordered(key.1),
             utils::from_ordered(key.2),
         );
-        if let Some(colors) = points_map.get(&key) {
-            let colors_mean = vec_mean(colors.clone());
-            points_result[(i, 0)] = point.0;
-            points_result[(i, 1)] = point.1;
-            points_result[(i, 2)] = point.2;
-            colors_result[(i, 0)] = colors_mean.0 as u8;
-            colors_result[(i, 1)] = colors_mean.1 as u8;
-            colors_result[(i, 2)] = colors_mean.2 as u8;
-        } else {
-            panic!("Error during duplicate points merging.")
-        }
+        let colors = points_map.get(&key).unwrap();
+        let colors_mean = vec_mean(colors);
+        points_result[(i, 0)] = point.0;
+        points_result[(i, 1)] = point.1;
+        points_result[(i, 2)] = point.2;
+        colors_result[(i, 0)] = colors_mean.0.round() as u8;
+        colors_result[(i, 1)] = colors_mean.1.round() as u8;
+        colors_result[(i, 2)] = colors_mean.2.round() as u8;
     }
     (points_result, colors_result)
 }
 
-fn rgb_to_yuv<'a>(rgb: &'a na::DMatrix<u8>) -> na::DMatrix<u8> {
+fn rgb_to_yuv<'a>(rgb: &'a DMatrix<u8>) -> DMatrix<u8> {
     let (rows, cols) = rgb.shape();
     assert!(
         cols == 3,
@@ -82,7 +75,7 @@ fn rgb_to_yuv<'a>(rgb: &'a na::DMatrix<u8>) -> na::DMatrix<u8> {
     let r = rgb_f64.column(0);
     let g = rgb_f64.column(1);
     let b = rgb_f64.column(2);
-    let c = na::DMatrix::from_row_slice(
+    let c = DMatrix::from_row_slice(
         3,
         3,
         &[
@@ -93,7 +86,7 @@ fn rgb_to_yuv<'a>(rgb: &'a na::DMatrix<u8>) -> na::DMatrix<u8> {
     let y = (c[(0, 0)] * &r + c[(0, 1)] * &g + c[(0, 2)] * &b).add_scalar(o[0]);
     let u = (c[(1, 0)] * &r + c[(1, 1)] * &g + c[(1, 2)] * &b).add_scalar(o[1]);
     let v = (c[(2, 0)] * &r + c[(2, 1)] * &g + c[(2, 2)] * &b).add_scalar(o[2]);
-    let mut yuv = na::DMatrix::zeros(rows, 3);
+    let mut yuv = DMatrix::zeros(rows, 3);
     for i in 0..rows {
         yuv[(i, 0)] = y[i].round() as u8;
         yuv[(i, 1)] = u[i].round() as u8;
@@ -103,9 +96,9 @@ fn rgb_to_yuv<'a>(rgb: &'a na::DMatrix<u8>) -> na::DMatrix<u8> {
 }
 
 pub fn preprocess_point_cloud<'a>(
-    points: &'a na::DMatrix<f64>,
-    colors: &'a na::DMatrix<u8>,
-) -> (na::DMatrix<f64>, na::DMatrix<u8>) {
+    points: &'a DMatrix<f64>,
+    colors: &'a DMatrix<u8>,
+) -> (DMatrix<f64>, DMatrix<u8>) {
     let (points_merged, colors_merged) = duplicate_merging(points, colors);
     let colors_yuv = rgb_to_yuv(&colors_merged);
     (points_merged, colors_yuv)
