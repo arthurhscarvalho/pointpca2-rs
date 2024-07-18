@@ -91,9 +91,9 @@ To validate the accuracy and reliability of the Rust implementation, we conducte
 | 35      | 0.9987 | 1.0000 |
 | 36      | 1.0000 | 1.0000 |
 | 37      | 0.9999 | 1.0000 |
-| 38      | 0.9986 | 0.9999 |
+| 38      | 0.9987 | 0.9999 |
 | 39      | 0.9981 | 0.9999 |
-| 40      | 0.9646 | 0.9961 |
+| 40      | 0.9647 | 0.9961 |
 
 *Correlation coefficients rounded to 4 decimal places for better readability.*
 
@@ -118,11 +118,11 @@ We can also calculate the absolute differences between corresponding features an
 
 | Maximum absolute difference | Maximum standard deviation |
 |-----------------------------|----------------------------|
-| 0.11058533454473118         | 0.027662647255776825       |
+| 0.11058533454477848         | 0.027662635634742926       |
 
 Feature sets were derived from each implementation utilizing the entire dataset (refer to references). These features were partitioned into training and testing sets using Leave One Group Out. LazyPredict was employed to fit the training features to the subjective scores from the dataset using all available regressors. Pearson and Spearman correlation coefficients were computed to compare the predicted (test) scores and the subjective (reference) scores, and a comparative plot was generated to visualize the results.
 
-<img src="https://i.imgur.com/XKFmEbj.png">
+<img src="https://i.imgur.com/oaknzk7.png">
 </details>
 
 ## Contributing
