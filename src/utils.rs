@@ -1,6 +1,6 @@
 extern crate ordered_float;
 use self::ordered_float::OrderedFloat;
-use nalgebra::{Const, DMatrix, Dyn, Matrix, Scalar, VecStorage};
+use na::{Const, DMatrix, Dyn, Matrix, Scalar, VecStorage};
 use std::ops::AddAssign;
 
 pub fn to_ordered(num: f64) -> OrderedFloat<f64> {
@@ -18,9 +18,9 @@ pub fn print_if_verbose<'a>(string: &'a str, verbose: &'a bool) {
 }
 
 pub fn slice_from_knn_indices<'a>(
-    points: &'a na::DMatrix<f64>,
-    colors: &'a na::DMatrix<u8>,
-    knn_indices: &'a na::DMatrix<usize>,
+    points: &'a DMatrix<f64>,
+    colors: &'a DMatrix<u8>,
+    knn_indices: &'a DMatrix<usize>,
     knn_row: usize,
     search_size: usize,
 ) -> (DMatrix<f64>, DMatrix<f64>) {
