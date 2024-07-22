@@ -1,6 +1,8 @@
 extern crate ordered_float;
 use self::ordered_float::OrderedFloat;
-use na::{Const, DMatrix, Dyn, Matrix, Scalar, VecStorage};
+use na::{Const, DMatrix, Dyn, Matrix, RowVector3, Scalar, VecStorage};
+use num_traits::AsPrimitive;
+use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use std::ops::AddAssign;
 
 pub fn to_ordered(num: f64) -> OrderedFloat<f64> {
@@ -17,24 +19,36 @@ pub fn print_if_verbose<'a>(string: &'a str, verbose: &'a bool) {
     }
 }
 
+pub fn dmatrix_to_vec_f64<T>(matrix: DMatrix<T>) -> Vec<[f64; 3]>
+where
+    T: Send + Sync + AsPrimitive<f64>,
+{
+    matrix
+        .row_iter()
+        .collect::<Vec<_>>()
+        .par_iter_mut()
+        .map(|p| [p[0].as_(), p[1].as_(), p[2].as_()])
+        .collect()
+}
+
 pub fn slice_from_knn_indices<'a>(
-    points: &'a DMatrix<f64>,
-    colors: &'a DMatrix<u8>,
+    points: &'a Vec<[f64; 3]>,
+    colors: &'a Vec<[f64; 3]>,
     knn_indices: &'a DMatrix<usize>,
-    knn_row: usize,
     search_size: usize,
 ) -> (DMatrix<f64>, DMatrix<f64>) {
-    let knn_indices_row = knn_indices.row(knn_row);
-    let sl_knn_indices = knn_indices_row.columns(0, search_size);
+    let sl_knn_indices = knn_indices.columns(0, search_size);
     let nrows = search_size;
-    let ncols = points.ncols();
+    let ncols = points[0].len();
     let mut selected_points = DMatrix::zeros(nrows, ncols);
     let mut selected_colors = DMatrix::zeros(nrows, ncols);
     for (i, j) in sl_knn_indices.iter().enumerate() {
-        selected_points.row_mut(i).copy_from(&points.row(*j));
+        selected_points
+            .row_mut(i)
+            .copy_from(&RowVector3::from_row_slice(&points[*j]));
         selected_colors
             .row_mut(i)
-            .copy_from(&colors.row(*j).map(|x| x as f64));
+            .copy_from(&RowVector3::from_row_slice(&colors[*j]));
     }
     (selected_points, selected_colors)
 }
