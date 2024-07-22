@@ -1,6 +1,6 @@
 extern crate ordered_float;
 use self::ordered_float::OrderedFloat;
-use na::{Const, DMatrix, Dyn, Matrix, RowVector3, Scalar, VecStorage};
+use na::{Const, DMatrix, Dyn, Matrix, Scalar, VecStorage};
 use num_traits::AsPrimitive;
 use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use std::ops::AddAssign;
@@ -43,12 +43,8 @@ pub fn slice_from_knn_indices<'a>(
     let mut selected_points = DMatrix::zeros(nrows, ncols);
     let mut selected_colors = DMatrix::zeros(nrows, ncols);
     for (i, j) in sl_knn_indices.iter().enumerate() {
-        selected_points
-            .row_mut(i)
-            .copy_from(&RowVector3::from_row_slice(&points[*j]));
-        selected_colors
-            .row_mut(i)
-            .copy_from(&RowVector3::from_row_slice(&colors[*j]));
+        selected_points.row_mut(i).copy_from_slice(&points[*j]);
+        selected_colors.row_mut(i).copy_from_slice(&colors[*j]);
     }
     (selected_points, selected_colors)
 }
