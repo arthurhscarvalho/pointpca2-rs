@@ -112,7 +112,7 @@ Firstly, we can compare the average time taken for the computation of features f
 | Implementation | Average time taken (seconds) |
 |----------------|------------------------------|
 | MATLAB         | 140.1177001453079            |
-| pointpca2-rs   | 6.681233939425699            |
+| pointpca2-rs   | 6.533299344366994            |
 
 We can also calculate the absolute differences between corresponding features and then determine the maximum absolute difference. Additionally, we can compute the standard deviation of these absolute differences and find the highest standard deviation among them.
 
