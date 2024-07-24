@@ -9,7 +9,6 @@ mod eigenvectors;
 mod features;
 mod knn_search;
 pub mod ply_manager;
-mod pooling;
 mod predictors;
 mod preprocessing;
 mod spatial_metrics;
@@ -36,7 +35,5 @@ pub fn compute_pointpca2<'a>(
     );
     utils::print_if_verbose("Computing predictors", &verbose);
     let predictors_result = predictors::compute_predictors(local_features);
-    utils::print_if_verbose("Pooling predictors", &verbose);
-    let pooled_predictors = pooling::mean_pooling(predictors_result);
-    pooled_predictors
+    predictors_result
 }

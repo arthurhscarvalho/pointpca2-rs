@@ -20,7 +20,6 @@ pub fn compute_features(
     let nrows = points_a.len();
     let ncols = 42;
     let mut local_features = DMatrix::zeros(nrows, ncols);
-    local_features.fill(f64::NAN);
     local_features
         .row_iter_mut()
         .collect::<Vec<_>>()
