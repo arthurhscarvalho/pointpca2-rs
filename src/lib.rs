@@ -9,6 +9,7 @@ mod eigenvectors;
 mod features;
 mod knn_search;
 pub mod ply_manager;
+mod pooling;
 mod predictors;
 mod preprocessing;
 mod spatial_metrics;
@@ -26,13 +27,8 @@ pub fn compute_pointpca2<'a>(
     let (points_a, colors_a) = preprocessing::preprocess_point_cloud(&points_a, &colors_a);
     let (points_b, colors_b) = preprocessing::preprocess_point_cloud(&points_b, &colors_b);
     utils::print_if_verbose("Computing local features", &verbose);
-    let local_features = features::compute_features(
-        points_a,
-        colors_a,
-        points_b,
-        colors_b,
-        search_size,
-    );
+    let local_features =
+        features::compute_features(points_a, colors_a, points_b, colors_b, search_size);
     utils::print_if_verbose("Computing predictors", &verbose);
     let predictors_result = predictors::compute_predictors(local_features);
     predictors_result
