@@ -1,25 +1,24 @@
 use kd_tree;
 use na::DMatrix;
-use rayon::prelude::*;
 
-pub fn knn_search<'a>(
-    xa: &'a DMatrix<f64>,
-    xb: &'a DMatrix<f64>,
-    search_size: usize,
+pub fn build_tree<'a>(points: &'a Vec<[f64; 3]>) -> kd_tree::KdIndexTree3<'a, [f64; 3]> {
+    let kdtree = kd_tree::KdIndexTree3::par_build_by_ordered_float(points);
+    kdtree
+}
+
+pub fn nearest_n<'a>(
+    kdtree: &'a kd_tree::KdIndexTree3<[f64; 3]>,
+    point: &[f64; 3],
+    n: usize,
 ) -> DMatrix<usize> {
-    let points: Vec<[f64; 3]> = xa.row_iter().map(|p| [p[0], p[1], p[2]]).collect();
-    let kdtree = kd_tree::KdIndexTree3::par_build_by_ordered_float(&points);
-    let mut knn_indices = DMatrix::zeros(xb.nrows(), search_size);
-    let mut knn_indices_rows: Vec<_> = knn_indices.row_iter_mut().collect();
-    knn_indices_rows
-        .par_iter_mut()
-        .enumerate()
-        .for_each(|(idx, row)| {
-            let point = xb.row(idx);
-            let neighbors = kdtree.nearests(&[point[0], point[1], point[2]], search_size);
-            let indices: Vec<usize> = neighbors.iter().map(|nbr| *nbr.item).collect();
-            let indices = DMatrix::from_row_slice(1, search_size, &indices);
-            row.copy_from(&indices);
-        });
-    knn_indices
+    let neighbors = kdtree.nearests(point, n);
+    let indices = DMatrix::from_row_slice(
+        1,
+        n,
+        &neighbors
+            .iter()
+            .map(|nbr| *nbr.item)
+            .collect::<Vec<usize>>(),
+    );
+    indices
 }

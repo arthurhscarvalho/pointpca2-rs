@@ -1,31 +1,38 @@
 use crate::eigenvectors;
+use crate::knn_search;
 use crate::utils;
 use na::DMatrix;
-use rayon::prelude::*;
+use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 
 pub fn compute_features(
     points_a: DMatrix<f64>,
     colors_a: DMatrix<u8>,
     points_b: DMatrix<f64>,
     colors_b: DMatrix<u8>,
-    knn_indices_a: DMatrix<usize>,
-    knn_indices_b: DMatrix<usize>,
     search_size: usize,
 ) -> DMatrix<f64> {
-    let nrows = points_a.nrows();
+    let points_a = utils::dmatrix_to_vec_f64(points_a);
+    let colors_a = utils::dmatrix_to_vec_f64(colors_a);
+    let points_b = utils::dmatrix_to_vec_f64(points_b);
+    let colors_b = utils::dmatrix_to_vec_f64(colors_b);
+    let kd_tree_a = knn_search::build_tree(&points_a);
+    let kd_tree_b = knn_search::build_tree(&points_b);
+    let nrows = points_a.len();
     let ncols = 42;
     let mut local_features = DMatrix::zeros(nrows, ncols);
-    local_features.fill(f64::NAN);
-    let mut local_features_rows: Vec<_> = local_features.row_iter_mut().collect();
-    local_features_rows
+    local_features
+        .row_iter_mut()
+        .collect::<Vec<_>>()
         .par_iter_mut()
         .enumerate()
         .for_each(|(i, row)| {
+            let knn_indices_a = knn_search::nearest_n(&kd_tree_a, &points_a[i], search_size);
+            let knn_indices_b = knn_search::nearest_n(&kd_tree_b, &points_a[i], search_size);
             // Slice points and colors from their respective knn indices
             let (sl_points_a, sl_colors_a) =
-                utils::slice_from_knn_indices(&points_a, &colors_a, &knn_indices_a, i, search_size);
+                utils::slice_from_knn_indices(&points_a, &colors_a, &knn_indices_a, search_size);
             let (sl_points_b, sl_colors_b) =
-                utils::slice_from_knn_indices(&points_b, &colors_b, &knn_indices_b, i, search_size);
+                utils::slice_from_knn_indices(&points_b, &colors_b, &knn_indices_b, search_size);
             // Principal components of reference data (new orthonormal basis)
             let eigenvectors_a = eigenvectors::compute_eigenvectors(&sl_points_a);
             // Project reference and distorted data onto the new orthonormal basis

@@ -11,7 +11,6 @@ pub fn iter_relative_difference<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let ncols = x.ncols();
     let mut result = DMatrix::zeros(nrows, ncols);
@@ -28,8 +27,6 @@ pub fn covariance_differences<'a, T: na::Dim>(
     y: &'a MatrixView<f64, T, T>,
     z: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
-    assert_eq!(x.shape(), z.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let ncols = x.ncols();
     let mut result = DMatrix::zeros(nrows, ncols);
@@ -47,7 +44,6 @@ pub fn textural_variance_sum<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
@@ -62,7 +58,6 @@ pub fn omnivariance_differences<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
@@ -77,7 +72,6 @@ pub fn entropy<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let ncols = x.ncols();
     let mut result = DMatrix::zeros(nrows, 1);
@@ -97,7 +91,6 @@ pub fn euclidean_distances<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let ncols = x.ncols();
     let mut result = DMatrix::zeros(nrows, 1);
@@ -116,7 +109,6 @@ pub fn vector_projected_distances<'a, T: na::Dim>(
     y: &'a MatrixView<f64, T, T>,
     col: usize,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let ncols = 1;
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, ncols);
@@ -157,7 +149,6 @@ pub fn anisotropy_planarity_linearity<'a, T: na::Dim>(
     col1: usize,
     col2: usize,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
@@ -172,7 +163,6 @@ pub fn surface_variation<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
@@ -188,7 +178,6 @@ pub fn sphericity<'a, T: na::Dim>(
     x: &'a MatrixView<f64, T, T>,
     y: &'a MatrixView<f64, T, T>,
 ) -> DMatrix<f64> {
-    assert_eq!(x.shape(), y.shape(), "Matrices must have the same shape.");
     let nrows = x.nrows();
     let mut result = DMatrix::zeros(nrows, 1);
     for i in 0..nrows {
