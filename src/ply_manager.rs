@@ -1,5 +1,6 @@
 use na::DMatrix;
-use ply_rs::{parser, ply, ply::DefaultElement, ply::Property};
+use ply_rs::{parser, ply, ply::Property};
+use std::io::BufReader;
 
 fn extract_value(property: &Property) -> f64 {
     match *property {
@@ -15,41 +16,49 @@ fn extract_value(property: &Property) -> f64 {
     }
 }
 
-pub fn read_ply(path: &str) -> ply::Ply<DefaultElement> {
-    let mut f = std::fs::File::open(path).unwrap();
-    let p = parser::Parser::<ply::DefaultElement>::new();
-    let ply = p.read_ply(&mut f);
-    assert!(ply.is_ok());
-    let ply = ply.unwrap();
-    ply
+struct Vertex {
+    xyz: [f64; 3],
+    rgb: [u8; 3],
 }
 
-pub fn read_ply_as_matrix(path: &str) -> (DMatrix<f64>, DMatrix<u8>) {
-    let point_cloud = read_ply(path);
-    let mut element_count = 0;
-    for (_, element) in point_cloud.header.elements {
-        if element.name == "vertex" {
-            element_count += element.count;
+impl ply::PropertyAccess for Vertex {
+    fn new() -> Self {
+        Vertex {
+            xyz: [0., 0., 0.],
+            rgb: [0, 0, 0],
         }
     }
-    let mut points: DMatrix<f64> = DMatrix::zeros(element_count, 3);
-    let mut colors: DMatrix<u8> = DMatrix::zeros(element_count, 3);
-    for i in 0..element_count {
-        let mut j = 0;
-        let vertex = &point_cloud.payload["vertex"][i];
-        for (_, property) in vertex {
-            let value = extract_value(property);
-            if j < 3 {
-                points[(i, j)] = value;
-            }
-            else if j < 6 {
-                colors[(i, j - 3)] = value as u8;
-            }
-            else {
-                panic!("More than 6 (XYZRGB) channels found on point cloud.")
-            }
-            j += 1;
+
+    fn set_property(&mut self, key: String, property: ply::Property) {
+        match key.as_ref() {
+            "x" => self.xyz[0] = extract_value(&property),
+            "y" => self.xyz[1] = extract_value(&property),
+            "z" => self.xyz[2] = extract_value(&property),
+            "red" => self.rgb[0] = extract_value(&property) as u8,
+            "green" => self.rgb[1] = extract_value(&property) as u8,
+            "blue" => self.rgb[2] = extract_value(&property) as u8,
+            _ => panic!("set_property: Unexpected key/property combination."),
         }
     }
+}
+
+pub fn read_point_cloud(path: &str) -> (DMatrix<f64>, DMatrix<u8>) {
+    let file = std::fs::File::open(path).unwrap();
+    let mut reader = BufReader::new(file);
+    let parser = parser::Parser::<Vertex>::new();
+    let header = parser.read_header(&mut reader).unwrap();
+    let element = header
+        .elements
+        .get("vertex")
+        .expect("Vertex element not found.");
+    let vertex_vector = parser
+        .read_payload_for_element(&mut reader, &element, &header)
+        .expect("Failure when reading ply payload.");
+    let mut points = DMatrix::zeros(vertex_vector.len(), 3);
+    let mut colors = DMatrix::zeros(vertex_vector.len(), 3);
+    vertex_vector.iter().enumerate().for_each(|(i, vertex)| {
+        points.row_mut(i).copy_from_slice(&vertex.xyz);
+        colors.row_mut(i).copy_from_slice(&vertex.rgb);
+    });
     (points, colors)
 }
