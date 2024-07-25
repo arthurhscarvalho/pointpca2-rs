@@ -37,7 +37,7 @@ impl ply::PropertyAccess for Vertex {
             "red" => self.rgb[0] = extract_value(&property) as u8,
             "green" => self.rgb[1] = extract_value(&property) as u8,
             "blue" => self.rgb[2] = extract_value(&property) as u8,
-            _ => {},
+            _ => {}
         }
     }
 }

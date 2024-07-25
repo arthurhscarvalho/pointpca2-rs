@@ -48,7 +48,6 @@ pub fn compute_predictors(local_features: DMatrix<f64>) -> Matrix1xX<f64> {
     ));
     predictors.column_mut(9).copy_from(&pooled_predictor);
     // Relative differences in omnivariance of textures
-
     let pooled_predictor = pooling.pool(&spatial_metrics::omnivariance_differences(
         &colors_variance_a,
         &colors_variance_b,
