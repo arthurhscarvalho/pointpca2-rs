@@ -24,8 +24,8 @@ pub fn compute_pointpca2<'a>(
     verbose: bool,
 ) -> na::Matrix1xX<f64> {
     utils::print_if_verbose("Preprocessing", &verbose);
-    let (points_a, colors_a) = preprocessing::preprocess_point_cloud(&points_a, &colors_a);
-    let (points_b, colors_b) = preprocessing::preprocess_point_cloud(&points_b, &colors_b);
+    let (points_a, colors_a) = preprocessing::preprocess_point_cloud(points_a, colors_a);
+    let (points_b, colors_b) = preprocessing::preprocess_point_cloud(points_b, colors_b);
     utils::print_if_verbose("Computing local features", &verbose);
     let local_features =
         features::compute_features(points_a, colors_a, points_b, colors_b, search_size);

@@ -21,10 +21,7 @@ fn vec_mean(
     mean
 }
 
-pub fn duplicate_merging<'a>(
-    points: &'a DMatrix<f64>,
-    colors: &'a DMatrix<u8>,
-) -> (DMatrix<f64>, DMatrix<u8>) {
+pub fn duplicate_merging(points: DMatrix<f64>, colors: DMatrix<u8>) -> (DMatrix<f64>, DMatrix<u8>) {
     let mut points_map: BTreeMap<
         (OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>),
         Vec<(OrderedFloat<f64>, OrderedFloat<f64>, OrderedFloat<f64>)>,
@@ -65,7 +62,7 @@ pub fn duplicate_merging<'a>(
     (points_result, colors_result)
 }
 
-fn rgb_to_yuv<'a>(rgb: &'a DMatrix<u8>) -> DMatrix<u8> {
+fn rgb_to_yuv(rgb: DMatrix<u8>) -> DMatrix<u8> {
     let (rows, cols) = rgb.shape();
     assert!(
         cols == 3,
@@ -95,11 +92,11 @@ fn rgb_to_yuv<'a>(rgb: &'a DMatrix<u8>) -> DMatrix<u8> {
     yuv
 }
 
-pub fn preprocess_point_cloud<'a>(
-    points: &'a DMatrix<f64>,
-    colors: &'a DMatrix<u8>,
+pub fn preprocess_point_cloud(
+    points: DMatrix<f64>,
+    colors: DMatrix<u8>,
 ) -> (DMatrix<f64>, DMatrix<u8>) {
-    let (points_merged, colors_merged) = duplicate_merging(points, colors);
-    let colors_yuv = rgb_to_yuv(&colors_merged);
-    (points_merged, colors_yuv)
+    let (points, colors) = duplicate_merging(points, colors);
+    let colors = rgb_to_yuv(colors);
+    (points, colors)
 }
