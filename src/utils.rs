@@ -1,17 +1,5 @@
-extern crate ordered_float;
-use self::ordered_float::OrderedFloat;
 use na::{Const, DMatrix, Dyn, Matrix, Scalar, VecStorage};
-use num_traits::AsPrimitive;
-use rayon::iter::{IntoParallelRefMutIterator, ParallelIterator};
 use std::ops::AddAssign;
-
-pub fn to_ordered(num: f64) -> OrderedFloat<f64> {
-    OrderedFloat(num)
-}
-
-pub fn from_ordered(num: OrderedFloat<f64>) -> f64 {
-    num.into()
-}
 
 pub fn print_if_verbose<'a>(string: &'a str, verbose: &'a bool) {
     if *verbose {
@@ -19,32 +7,21 @@ pub fn print_if_verbose<'a>(string: &'a str, verbose: &'a bool) {
     }
 }
 
-pub fn dmatrix_to_vec_f64<T>(matrix: DMatrix<T>) -> Vec<[f64; 3]>
-where
-    T: Send + Sync + AsPrimitive<f64>,
-{
-    matrix
-        .row_iter()
-        .collect::<Vec<_>>()
-        .par_iter_mut()
-        .map(|p| [p[0].as_(), p[1].as_(), p[2].as_()])
-        .collect()
-}
-
 pub fn slice_from_knn_indices<'a>(
-    points: &'a Vec<[f64; 3]>,
-    colors: &'a Vec<[f64; 3]>,
-    knn_indices: &'a DMatrix<usize>,
+    points: &'a Vec<[f32; 3]>,
+    colors: &'a Vec<[u8; 3]>,
+    knn_indices: &'a Vec<usize>,
     search_size: usize,
-) -> (DMatrix<f64>, DMatrix<f64>) {
-    let sl_knn_indices = knn_indices.columns(0, search_size);
+) -> (DMatrix<f32>, DMatrix<f32>) {
     let nrows = search_size;
     let ncols = points[0].len();
     let mut selected_points = DMatrix::zeros(nrows, ncols);
     let mut selected_colors = DMatrix::zeros(nrows, ncols);
-    for (i, j) in sl_knn_indices.iter().enumerate() {
-        selected_points.row_mut(i).copy_from_slice(&points[*j]);
-        selected_colors.row_mut(i).copy_from_slice(&colors[*j]);
+    for (i, &nbr_idx) in knn_indices.iter().enumerate() {
+        selected_points.row_mut(i).copy_from_slice(&points[nbr_idx]);
+        selected_colors
+            .row_mut(i)
+            .copy_from_slice(&colors[nbr_idx].map(|c| c as f32));
     }
     (selected_points, selected_colors)
 }
@@ -69,9 +46,9 @@ where
 }
 
 pub fn subtract_row_from_matrix<'a>(
-    matrix: &'a DMatrix<f64>,
-    row_vec: &'a Matrix<f64, Const<1>, Dyn, VecStorage<f64, Const<1>, Dyn>>,
-) -> DMatrix<f64> {
+    matrix: &'a DMatrix<f32>,
+    row_vec: &'a Matrix<f32, Const<1>, Dyn, VecStorage<f32, Const<1>, Dyn>>,
+) -> DMatrix<f32> {
     assert_eq!(row_vec.nrows(), 1, "row_vec must be a single-row vector.");
     assert_eq!(
         matrix.ncols(),

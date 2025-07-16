@@ -5,9 +5,9 @@ extern crate ordered_float;
 extern crate ply_rs;
 extern crate rayon;
 
-mod eigenvectors;
 mod features;
 mod knn_search;
+mod pca;
 pub mod ply_manager;
 mod pooling;
 mod predictors;
@@ -16,13 +16,13 @@ mod spatial_metrics;
 mod utils;
 
 pub fn compute_pointpca2<'a>(
-    points_a: na::DMatrix<f64>,
-    colors_a: na::DMatrix<u8>,
-    points_b: na::DMatrix<f64>,
-    colors_b: na::DMatrix<u8>,
+    points_a: Vec<[f32; 3]>,
+    colors_a: Vec<[u8; 3]>,
+    points_b: Vec<[f32; 3]>,
+    colors_b: Vec<[u8; 3]>,
     search_size: usize,
     verbose: bool,
-) -> na::Matrix1xX<f64> {
+) -> na::Matrix1xX<f32> {
     utils::print_if_verbose("Preprocessing", &verbose);
     let (points_a, colors_a) = preprocessing::preprocess_point_cloud(points_a, colors_a);
     let (points_b, colors_b) = preprocessing::preprocess_point_cloud(points_b, colors_b);

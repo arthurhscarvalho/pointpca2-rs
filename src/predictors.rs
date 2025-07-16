@@ -2,7 +2,9 @@ use crate::pooling;
 use crate::spatial_metrics;
 use na::{DMatrix, Matrix1xX};
 
-pub fn compute_predictors(local_features: DMatrix<f64>) -> Matrix1xX<f64> {
+const PREDICTORS_DIMENSION: usize = 40;
+
+pub fn compute_predictors(local_features: DMatrix<f32>) -> Matrix1xX<f32> {
     let projection_a_to_a = local_features.columns(0, 3);
     let projection_b_to_a = local_features.columns(3, 3);
     let colors_mean_a = local_features.columns(6, 3);
@@ -17,7 +19,7 @@ pub fn compute_predictors(local_features: DMatrix<f64>) -> Matrix1xX<f64> {
     let eigenvectors_b_x = local_features.columns(33, 3);
     let eigenvectors_b_y = local_features.columns(36, 3);
     let eigenvectors_b_z = local_features.columns(39, 3);
-    let mut predictors = Matrix1xX::zeros(40);
+    let mut predictors = Matrix1xX::zeros(PREDICTORS_DIMENSION);
     let pooling = pooling::Pool::new("mean_pooling").unwrap();
     /*
         Textural predictors
