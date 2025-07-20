@@ -28,7 +28,7 @@ impl Pool {
         PoolingTechnique::from_str(pooling).map(|technique| Self { technique })
     }
 
-    pub fn pool<'a>(&self, matrix: &'a DMatrix<f32>) -> Matrix1xX<f32> {
+    pub fn pool<'a>(&self, matrix: &'a DMatrix<f64>) -> Matrix1xX<f64> {
         match self.technique {
             PoolingTechnique::MeanPooling => self.mean_pooling(matrix),
             PoolingTechnique::MaxPooling => self.max_pooling(matrix),
@@ -37,25 +37,25 @@ impl Pool {
         }
     }
 
-    fn mean_pooling<'a>(&self, matrix: &'a DMatrix<f32>) -> Matrix1xX<f32> {
+    fn mean_pooling<'a>(&self, matrix: &'a DMatrix<f64>) -> Matrix1xX<f64> {
         matrix.row_mean()
     }
 
-    fn max_pooling<'a>(&self, matrix: &'a DMatrix<f32>) -> Matrix1xX<f32> {
+    fn max_pooling<'a>(&self, matrix: &'a DMatrix<f64>) -> Matrix1xX<f64> {
         (0..matrix.ncols())
             .map(|i| matrix.column(i).max())
             .collect::<Vec<_>>()
             .into()
     }
 
-    fn min_pooling<'a>(&self, matrix: &'a DMatrix<f32>) -> Matrix1xX<f32> {
+    fn min_pooling<'a>(&self, matrix: &'a DMatrix<f64>) -> Matrix1xX<f64> {
         (0..matrix.ncols())
             .map(|i| matrix.column(i).min())
             .collect::<Vec<_>>()
             .into()
     }
 
-    fn median_pooling<'a>(&self, matrix: &'a DMatrix<f32>) -> Matrix1xX<f32> {
+    fn median_pooling<'a>(&self, matrix: &'a DMatrix<f64>) -> Matrix1xX<f64> {
         let ncols = matrix.ncols();
         let mut medians = Matrix1xX::zeros(ncols);
         for i in 0..ncols {

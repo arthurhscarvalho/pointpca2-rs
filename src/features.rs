@@ -7,12 +7,12 @@ use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelI
 const FEATURES_DIMENSION: usize = 42;
 
 pub fn compute_features(
-    points_a: Vec<[f32; 3]>,
+    points_a: Vec<[f64; 3]>,
     colors_a: Vec<[u8; 3]>,
-    points_b: Vec<[f32; 3]>,
+    points_b: Vec<[f64; 3]>,
     colors_b: Vec<[u8; 3]>,
     search_size: usize,
-) -> DMatrix<f32> {
+) -> DMatrix<f64> {
     let kd_tree_a = knn_search::build_tree(&points_a);
     let kd_tree_b = knn_search::build_tree(&points_b);
     let nrows = points_a.len();

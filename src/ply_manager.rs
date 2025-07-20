@@ -1,22 +1,22 @@
 use ply_rs::{parser, ply, ply::Property};
 use std::io::BufReader;
 
-fn extract_value(property: &Property) -> f32 {
+fn extract_value(property: &Property) -> f64 {
     match *property {
-        Property::Char(value) => value as f32,
-        Property::UChar(value) => value as f32,
-        Property::Short(value) => value as f32,
-        Property::UShort(value) => value as f32,
-        Property::Int(value) => value as f32,
-        Property::UInt(value) => value as f32,
-        Property::Float(value) => value as f32,
-        Property::Double(value) => value as f32,
+        Property::Char(value) => value as f64,
+        Property::UChar(value) => value as f64,
+        Property::Short(value) => value as f64,
+        Property::UShort(value) => value as f64,
+        Property::Int(value) => value as f64,
+        Property::UInt(value) => value as f64,
+        Property::Float(value) => value as f64,
+        Property::Double(value) => value as f64,
         _ => panic!("extract_value: Unexpected value found in property."),
     }
 }
 
 struct Vertex {
-    xyz: [f32; 3],
+    xyz: [f64; 3],
     rgb: [u8; 3],
 }
 
@@ -47,7 +47,7 @@ impl ply::PropertyAccess for Vertex {
     }
 }
 
-pub fn read_point_cloud(path: &str) -> (Vec<[f32; 3]>, Vec<[u8; 3]>) {
+pub fn read_point_cloud(path: &str) -> (Vec<[f64; 3]>, Vec<[u8; 3]>) {
     let file = std::fs::File::open(path).unwrap();
     let mut reader = BufReader::new(file);
     let parser = parser::Parser::<Vertex>::new();

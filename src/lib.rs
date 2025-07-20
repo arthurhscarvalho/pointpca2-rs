@@ -16,13 +16,13 @@ mod spatial_metrics;
 mod utils;
 
 pub fn compute_pointpca2<'a>(
-    points_a: Vec<[f32; 3]>,
+    points_a: Vec<[f64; 3]>,
     colors_a: Vec<[u8; 3]>,
-    points_b: Vec<[f32; 3]>,
+    points_b: Vec<[f64; 3]>,
     colors_b: Vec<[u8; 3]>,
     search_size: usize,
     verbose: bool,
-) -> na::Matrix1xX<f32> {
+) -> na::Matrix1xX<f64> {
     utils::print_if_verbose("Preprocessing", &verbose);
     let (points_a, colors_a) = preprocessing::preprocess_point_cloud(points_a, colors_a);
     let (points_b, colors_b) = preprocessing::preprocess_point_cloud(points_b, colors_b);

@@ -5,7 +5,7 @@ use rayon::prelude::*;
 
 const PREDICTORS_DIMENSION: usize = 40;
 
-pub fn compute_predictors(local_features: DMatrix<f32>) -> Matrix1xX<f32> {
+pub fn compute_predictors(local_features: DMatrix<f64>) -> Matrix1xX<f64> {
     let projection_a_to_a = local_features.columns(0, 3);
     let projection_b_to_a = local_features.columns(3, 3);
     let colors_mean_a = local_features.columns(6, 3);
@@ -23,7 +23,7 @@ pub fn compute_predictors(local_features: DMatrix<f32>) -> Matrix1xX<f32> {
     let mut predictors = Matrix1xX::zeros(PREDICTORS_DIMENSION);
     let pooling = pooling::Pool::new("mean_pooling").unwrap();
     // Define all predictor computations as closures that return (start_col, num_cols, values)
-    let predictor_computations: Vec<Box<dyn Fn() -> (usize, usize, Matrix1xX<f32>) + Send + Sync>> = vec![
+    let predictor_computations: Vec<Box<dyn Fn() -> (usize, usize, Matrix1xX<f64>) + Send + Sync>> = vec![
         // Textural predictors
         Box::new(|| {
             let pooled = pooling.pool(&spatial_metrics::iter_relative_difference(
@@ -212,7 +212,7 @@ pub fn compute_predictors(local_features: DMatrix<f32>) -> Matrix1xX<f32> {
         }),
     ];
     // Compute all predictors in parallel
-    let results: Vec<(usize, usize, Matrix1xX<f32>)> = predictor_computations
+    let results: Vec<(usize, usize, Matrix1xX<f64>)> = predictor_computations
         .into_par_iter()
         .map(|computation| computation())
         .collect();

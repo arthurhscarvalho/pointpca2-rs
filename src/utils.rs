@@ -8,11 +8,11 @@ pub fn print_if_verbose<'a>(string: &'a str, verbose: &'a bool) {
 }
 
 pub fn slice_from_knn_indices<'a>(
-    points: &'a Vec<[f32; 3]>,
+    points: &'a Vec<[f64; 3]>,
     colors: &'a Vec<[u8; 3]>,
     knn_indices: &'a Vec<usize>,
     search_size: usize,
-) -> (DMatrix<f32>, DMatrix<f32>) {
+) -> (DMatrix<f64>, DMatrix<f64>) {
     let nrows = search_size;
     let ncols = points[0].len();
     let mut selected_points = DMatrix::zeros(nrows, ncols);
@@ -21,7 +21,7 @@ pub fn slice_from_knn_indices<'a>(
         selected_points.row_mut(i).copy_from_slice(&points[nbr_idx]);
         selected_colors
             .row_mut(i)
-            .copy_from_slice(&colors[nbr_idx].map(|c| c as f32));
+            .copy_from_slice(&colors[nbr_idx].map(|c| c as f64));
     }
     (selected_points, selected_colors)
 }
@@ -46,9 +46,9 @@ where
 }
 
 pub fn subtract_row_from_matrix<'a>(
-    matrix: &'a DMatrix<f32>,
-    row_vec: &'a Matrix<f32, Const<1>, Dyn, VecStorage<f32, Const<1>, Dyn>>,
-) -> DMatrix<f32> {
+    matrix: &'a DMatrix<f64>,
+    row_vec: &'a Matrix<f64, Const<1>, Dyn, VecStorage<f64, Const<1>, Dyn>>,
+) -> DMatrix<f64> {
     assert_eq!(row_vec.nrows(), 1, "row_vec must be a single-row vector.");
     assert_eq!(
         matrix.ncols(),
