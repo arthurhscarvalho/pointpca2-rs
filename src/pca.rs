@@ -27,18 +27,26 @@ fn eigen_sign_correction(mut u: DMatrix<f64>) -> DMatrix<f64> {
 
 fn compute_eigenvectors(matrix: DMatrix<f64>) -> DMatrix<f64> {
     let eigen = matrix.symmetric_eigen();
-    let mut indices: Vec<usize> = (0..eigen.eigenvalues.len()).collect();
-    indices.sort_by(|&i, &j| {
-        eigen.eigenvalues[j]
-            .partial_cmp(&eigen.eigenvalues[i])
-            .unwrap_or(std::cmp::Ordering::Equal)
-    });
+    // Sort indices by eigenvalues in descending order (largest first)
+    let mut indices = [0, 1, 2];
+    let eigenvalues = &eigen.eigenvalues;
+    // Manual sorting for 3x3 matrix - faster than Vec allocation and sort
+    if eigenvalues[indices[0]] < eigenvalues[indices[1]] {
+        indices.swap(0, 1);
+    }
+    if eigenvalues[indices[1]] < eigenvalues[indices[2]] {
+        indices.swap(1, 2);
+    }
+    if eigenvalues[indices[0]] < eigenvalues[indices[1]] {
+        indices.swap(0, 1);
+    }
     let sorted_eigenvectors = DMatrix::from_columns(
         &indices
             .iter()
-            .map(|&i| eigen.eigenvectors.column(i).into_owned())
+            .map(|&i| eigen.eigenvectors.column(i))
             .collect::<Vec<_>>(),
     );
+    // Sign correction for eigenvectors
     let u_corrected = eigen_sign_correction(sorted_eigenvectors);
     u_corrected
 }
