@@ -1,25 +1,22 @@
-use crate::eigenvectors;
 use crate::knn_search;
+use crate::pca;
 use crate::utils;
 use na::DMatrix;
 use rayon::iter::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 
+const FEATURES_DIMENSION: usize = 42;
+
 pub fn compute_features(
-    points_a: DMatrix<f64>,
-    colors_a: DMatrix<u8>,
-    points_b: DMatrix<f64>,
-    colors_b: DMatrix<u8>,
+    points_a: Vec<[f64; 3]>,
+    colors_a: Vec<[u8; 3]>,
+    points_b: Vec<[f64; 3]>,
+    colors_b: Vec<[u8; 3]>,
     search_size: usize,
 ) -> DMatrix<f64> {
-    let points_a = utils::dmatrix_to_vec_f64(points_a);
-    let colors_a = utils::dmatrix_to_vec_f64(colors_a);
-    let points_b = utils::dmatrix_to_vec_f64(points_b);
-    let colors_b = utils::dmatrix_to_vec_f64(colors_b);
     let kd_tree_a = knn_search::build_tree(&points_a);
     let kd_tree_b = knn_search::build_tree(&points_b);
     let nrows = points_a.len();
-    let ncols = 42;
-    let mut local_features = DMatrix::zeros(nrows, ncols);
+    let mut local_features = DMatrix::zeros(nrows, FEATURES_DIMENSION);
     local_features
         .row_iter_mut()
         .collect::<Vec<_>>()
@@ -34,7 +31,7 @@ pub fn compute_features(
             let (sl_points_b, sl_colors_b) =
                 utils::slice_from_knn_indices(&points_b, &colors_b, &knn_indices_b, search_size);
             // Principal components of reference data (new orthonormal basis)
-            let eigenvectors_a = eigenvectors::compute_eigenvectors(&sl_points_a);
+            let eigenvectors_a = pca::compute_pca(&sl_points_a);
             // Project reference and distorted data onto the new orthonormal basis
             let sl_points_a_mean = sl_points_a.row_mean();
             let projection_a_to_a =
@@ -54,7 +51,7 @@ pub fn compute_features(
             let variance_b = mean_deviation_b.map(|x| x.powi(2)).row_mean();
             let covariance_ab = mean_deviation_a.component_mul(&mean_deviation_b).row_mean();
             // Principal components of projected distorted data
-            let eigenvectors_b = eigenvectors::compute_eigenvectors(&projection_b_to_a).transpose();
+            let eigenvectors_b = pca::compute_pca(&projection_b_to_a).transpose();
             // Update local features
             row.columns_mut(0, 3).copy_from(&projection_a_to_a.row(0));
             row.columns_mut(3, 3).copy_from(&projection_b_to_a.row(0));

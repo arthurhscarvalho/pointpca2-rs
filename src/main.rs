@@ -6,7 +6,7 @@ fn main() {
     let verbose = true;
     println!("Reading ply");
     let (points_a, colors_a) = ply_manager::read_point_cloud("<path-to-reference>");
-    let (points_b, colors_b) = ply_manager::read_point_cloud("<path-to-test>");
+    let (points_b, colors_b) = ply_manager::read_point_cloud("<path-to-distorted>");
     let pooled_predictors = pointpca2_rs::compute_pointpca2(
         points_a,
         colors_a,
