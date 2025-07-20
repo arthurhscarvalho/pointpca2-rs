@@ -218,13 +218,9 @@ pub fn compute_predictors(local_features: DMatrix<f64>) -> Matrix1xX<f64> {
         .collect();
     // Copy results back to the predictors matrix
     for (start_col, num_cols, values) in results {
-        if num_cols == 1 {
-            predictors.column_mut(start_col).copy_from(&values);
-        } else {
-            predictors
-                .columns_mut(start_col, num_cols)
-                .copy_from(&values);
-        }
+        predictors
+            .columns_mut(start_col, num_cols)
+            .copy_from(&values);
     }
     predictors
 }
