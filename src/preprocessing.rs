@@ -32,16 +32,16 @@ fn rgb_to_yuv(rgb: [u8; 3]) -> [u8; 3] {
 
 fn mean_colors(colors: Vec<[u8; 3]>) -> [u8; 3] {
     let vec_len = colors.len() as f64;
-    let mut vec_sum = (0, 0, 0);
+    let mut vec_sum: (f64, f64, f64) = (0.0, 0.0, 0.0);
     for color in colors {
-        vec_sum.0 += color[0];
-        vec_sum.1 += color[1];
-        vec_sum.2 += color[2];
+        vec_sum.0 += color[0] as f64;
+        vec_sum.1 += color[1] as f64;
+        vec_sum.2 += color[2] as f64;
     }
     let mean = (
-        vec_sum.0 as f64 / vec_len,
-        vec_sum.1 as f64 / vec_len,
-        vec_sum.2 as f64 / vec_len,
+        vec_sum.0 / vec_len,
+        vec_sum.1 / vec_len,
+        vec_sum.2 / vec_len,
     );
     let rounded_mean = [
         mean.0.round() as u8,
