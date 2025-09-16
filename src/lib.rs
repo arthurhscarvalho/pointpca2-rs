@@ -5,15 +5,15 @@ extern crate ordered_float;
 extern crate ply_rs;
 extern crate rayon;
 
-mod features;
-mod knn_search;
-mod pca;
+pub mod features;
+pub mod knn_search;
+pub mod pca;
 pub mod ply_manager;
-mod pooling;
-mod predictors;
-mod preprocessing;
-mod spatial_metrics;
-mod utils;
+pub mod pooling;
+pub mod predictors;
+pub mod preprocessing;
+pub mod spatial_metrics;
+pub mod utils;
 
 pub fn compute_pointpca2<'a>(
     points_a: Vec<[f64; 3]>,
